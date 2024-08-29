@@ -36,10 +36,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
     'playground',
+    'store',
+    'tags',
 ]
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -121,3 +125,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+import sys
+TESTING = "test" in sys.argv
+
+if TESTING:
+    INSTALLED_APPS = [
+        *INSTALLED_APPS,
+    ]
+    MIDDLEWARE = [
+        *MIDDLEWARE,
+    ]

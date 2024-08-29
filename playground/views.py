@@ -2,4 +2,6 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 def say_hello(request):
-    return HttpResponse('hello_world!')
+    x = 3
+    y = 7
+    return render(request, 'hello.html', {'value' : f'{x} != {y}'})
