@@ -1,11 +1,17 @@
 from django.db import models
 
+class Collection(models.Model):
+    title = models.CharField(max_length=255)
+
 class Product(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=12)
     inventory = models.PositiveIntegerField()
     last_update = models.DateTimeField(auto_now=True)
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, 
+        )
 
 
 class Customer(models.Model):
@@ -39,6 +45,6 @@ class Order(models.Model):
 class Adress(models.Model):
     street = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
-    customer = models.OneToOneField(
-        Customer, on_delete=models.CASCADE, primary_key=True
+    customer = models.ForeignKey(
+        Customer, on_delete=models.CASCADE
         )
