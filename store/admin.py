@@ -7,7 +7,7 @@ from django.utils.html import format_html, urlencode
 from django.urls import reverse
 from .models import *
 admin.site.register(Promotion)
-admin.site.register(Address)
+
 
 class ProductInventoryFilter(admin.SimpleListFilter):
     title = 'Inventory'
@@ -25,9 +25,12 @@ class ProductInventoryFilter(admin.SimpleListFilter):
         elif self.value() == '>30':
             return queryset.filter(inventory__gt=30)
 
-
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['collection']
+    prepopulated_fields = {
+        'slug': ['title']
+    }
     actions = ['clear_inventory']
     list_display = ['title', 'unit_price', 'collection', 'inventory_status', 'inventory']    
     list_per_page = 20
@@ -49,12 +52,12 @@ class ProductAdmin(admin.ModelAdmin):
             f'{inventory_count} products were successfully updated.',
             messages.SUCCESS
         )
-
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'product_count'] # second field: to find out how many products we have related to collection.
     list_per_page = 20
     search_fields = ['title']
+    autocomplete_fields = ['featured_product']
 
     @admin.display(ordering='product_count')
     def product_count(self, collection):
@@ -77,7 +80,7 @@ class CustomerAdmin(admin.ModelAdmin):
     list_editable = ['membership']
     list_per_page = 20
     search_fields = ['first_name', 'last_name', 'first_name__istartswith', 'last_name__istartswith']
-
+    
     @admin.display(ordering='order_count')
     def order_count(self, customer):
         related_url = reverse('admin:store_order_changelist')\
@@ -91,11 +94,13 @@ class CustomerAdmin(admin.ModelAdmin):
             order_count = Count('order')
         )
 
-
-
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['customer', 'placed_at', 'payment_status']
     list_editable = ['payment_status']
-    list_per_page = 20
     search_fields = ['payment_status']
+    autocomplete_fields = ['customer']
+    list_per_page = 20
+@admin.register(Address)
+class AdressAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['customer']
