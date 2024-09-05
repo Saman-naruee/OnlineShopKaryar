@@ -1,5 +1,5 @@
 from django.test import TestCase  
-from ..models import Promotion, Collection, Product, Customer, Order, OrderItem, Address, Cart, CartItem  
+from store.models import Promotion, Collection, Product, Customer, Order, OrderItem, Address, Cart, CartItem  
 
 class PromotionModelTest(TestCase):  
     def test_string_representation(self):  
