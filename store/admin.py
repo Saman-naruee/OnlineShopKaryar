@@ -1,5 +1,5 @@
 from typing import Any
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
 from django.db.models import Count
@@ -28,6 +28,7 @@ class ProductInventoryFilter(admin.SimpleListFilter):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    actions = ['clear_inventory']
     list_display = ['title', 'unit_price', 'collection', 'inventory_status', 'inventory']    
     list_per_page = 20
     list_select_related = ['collection']
@@ -40,6 +41,14 @@ class ProductAdmin(admin.ModelAdmin):
             return 'Low'
         return 'Ok'
 
+    @admin.display(description='Clear Inventory.')
+    def clear_inventory(self, request, queryset):
+        inventory_count = queryset.update(inventory=0)
+        self.message_user(
+            request,
+            f'{inventory_count} products were successfully updated.',
+            messages.SUCCESS
+        )
 
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
