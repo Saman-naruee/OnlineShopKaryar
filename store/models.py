@@ -2,11 +2,12 @@ from django.db import models
 
 
 class Promotion(models.Model):
-    description = models.CharField(max_length=255)
-    discount = models.FloatField()
+    id = models.AutoField(primary_key=True)
+    description = models.CharField(max_length=255, default='')
+    discount = models.FloatField(default=0)
 
     def __str__(self) -> str:
-        return self.discount
+        return str(self.discount)
 
 
 class Collection(models.Model):
@@ -21,6 +22,7 @@ class Collection(models.Model):
         ordering = ['title']
 
 class Product(models.Model):
+    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255)
     slug = models.SlugField()
     description = models.TextField()

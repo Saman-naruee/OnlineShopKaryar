@@ -9,11 +9,30 @@ from .models import *
 admin.site.register(Promotion)
 admin.site.register(Address)
 
+class ProductInventoryFilter(admin.SimpleListFilter):
+    title = 'Inventory'
+    parameter_name = 'inventory'
+
+    def lookups(self, request: Any, model_admin: Any) -> list[tuple[Any, str]]:
+        return [
+            ('<10', 'Low'),
+            ('>30', 'Ok'), 
+        ]
+    
+    def queryset(self, request: Any, queryset: QuerySet[Any]) -> QuerySet[Any] | None:
+        if self.value() == '<10':
+            return queryset.filter(inventory__lt=10)
+        elif self.value() == '>30':
+            return queryset.filter(inventory__gt=30)
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['title', 'unit_price', 'collection', 'inventory_status', 'inventory']    
     list_per_page = 20
     list_select_related = ['collection']
+    search_fields = ['title']
+    list_filter = ['collection', 'last_update', ProductInventoryFilter]
 
     @admin.display(ordering='inventory')
     def inventory_status(self, product):
@@ -26,6 +45,7 @@ class ProductAdmin(admin.ModelAdmin):
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'product_count'] # second field: to find out how many products we have related to collection.
     list_per_page = 20
+    search_fields = ['title']
 
     @admin.display(ordering='product_count')
     def product_count(self, collection):
@@ -47,6 +67,7 @@ class CustomerAdmin(admin.ModelAdmin):
     list_display = ['first_name', 'last_name', 'membership', 'order_count']
     list_editable = ['membership']
     list_per_page = 20
+    search_fields = ['first_name', 'last_name', 'first_name__istartswith', 'last_name__istartswith']
 
     @admin.display(ordering='order_count')
     def order_count(self, customer):
@@ -68,3 +89,4 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['customer', 'placed_at', 'payment_status']
     list_editable = ['payment_status']
     list_per_page = 20
+    search_fields = ['payment_status']
