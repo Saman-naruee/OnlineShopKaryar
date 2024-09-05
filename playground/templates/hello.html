@@ -1,9 +1,12 @@
 <html>
-    <body>
-        {% if value %}
-        <p>I got this value as "{{ value }}"</p>
-        {% else %}
-        <h1>Hello World!</h1>
-        {% endif %}
-    </body>
+  <body>
+    {% if name %}
+    <h1>Hello {{ name }}</h1>
+    {% else %}
+    <h1>Hello World</h1>
+    {% endif %}
+    <ul>
+      {{ result }}
+    </ul>
+  </body>
 </html>

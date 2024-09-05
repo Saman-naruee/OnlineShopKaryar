@@ -38,10 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'debug_toolbar',
+    'likes',
     'playground',
     'store',
+    'store_custom',
     'tags',
-    'likes',
 ]
 
 MIDDLEWARE = [
@@ -142,3 +143,7 @@ if TESTING:
     MIDDLEWARE = [
         *MIDDLEWARE,
     ]
+
+INTERNAL_IPS = [
+    '127.0.0.1'
+]
