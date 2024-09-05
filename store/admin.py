@@ -1,13 +1,11 @@
 from typing import Any
 from django.contrib import admin, messages
-from django.contrib.contenttypes.admin import GenericTabularInline
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
 from django.db.models import Count
 from django.utils.html import format_html, urlencode
 from django.urls import reverse
 from .models import *
-from tags.models import TaggedItem
 admin.site.register(Promotion)
 
 
@@ -25,10 +23,6 @@ class ProductInventoryFilter(admin.SimpleListFilter):
         elif self.value() == '>30':
             return queryset.filter(inventory__gt=30)
 
-class TaggedInline(GenericTabularInline):
-    model = TaggedItem
-    autocomplete_fields = ['tag']
-
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     autocomplete_fields = ['collection']
@@ -40,7 +34,6 @@ class ProductAdmin(admin.ModelAdmin):
     list_per_page = 20
     list_select_related = ['collection']
     list_filter = ['collection', 'last_update', ProductInventoryFilter]
-    inlines = [TaggedInline]
     search_fields = ['title']
 
     @admin.display(ordering='inventory')
