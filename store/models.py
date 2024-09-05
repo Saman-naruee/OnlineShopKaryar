@@ -5,12 +5,20 @@ class Promotion(models.Model):
     description = models.CharField(max_length=255)
     discount = models.FloatField()
 
+    def __str__(self) -> str:
+        return self.discount
+
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
     featured_product = models.ForeignKey(
         'Product', on_delete=models.SET_NULL, null=True, related_name='+')
+    
+    def __str__(self) -> str:
+        return self.title
 
+    class Meta:
+        ordering = ['title']
 
 class Product(models.Model):
     title = models.CharField(max_length=255)
@@ -22,6 +30,11 @@ class Product(models.Model):
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
     promotions = models.ManyToManyField(Promotion)
 
+    def __str__(self) -> str:
+        return self.title
+
+    class Meta:
+        ordering = ['title']
 
 class Customer(models.Model):
     MEMBERSHIP_BRONZE = 'B'
@@ -40,6 +53,12 @@ class Customer(models.Model):
     birth_date = models.DateField(null=True)
     membership = models.CharField(
         max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
+    
+    def __str__(self) -> str:
+        return f"Mr.{self.last_name}"
+    
+    class Meta:
+        ordering = ['last_name']
 
 
 class Order(models.Model):
@@ -57,6 +76,8 @@ class Order(models.Model):
         max_length=1, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_STATUS_PENDING)
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
 
+    def __str__(self) -> str:
+        return f'{self.pk}.Order of {self.customer}'
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
@@ -71,9 +92,14 @@ class Address(models.Model):
     customer = models.ForeignKey(
         Customer, on_delete=models.CASCADE)
 
+    def __str__(self) -> str:
+        return f'{self.customer}: {self.city}'
 
 class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.created_at
 
 
 class CartItem(models.Model):
