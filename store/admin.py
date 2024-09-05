@@ -94,13 +94,22 @@ class CustomerAdmin(admin.ModelAdmin):
             order_count = Count('order')
         )
 
+
+class OrderItemInline(admin.TabularInline):
+    autocomplete_fields = ['product']
+    model = OrderItem
+    extra = 1
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['customer', 'placed_at', 'payment_status']
     list_editable = ['payment_status']
     search_fields = ['payment_status']
     autocomplete_fields = ['customer']
+    inlines = [OrderItemInline]
     list_per_page = 20
+
+
 @admin.register(Address)
 class AdressAdmin(admin.ModelAdmin):
     autocomplete_fields = ['customer']
