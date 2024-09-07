@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'debug_toolbar',
+    'rest_framework',
     'likes',
     'playground',
     'store',
