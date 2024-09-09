@@ -11,7 +11,8 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'title', 'unit_price', 'price_with_tax', 'collection'] # we can keep other non-existing fields down the bottom like before.
-    
+    collection = serializers.PrimaryKeyRelatedField(queryset=Collection.objects.all())
     price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')
     def calculate_tax(self, product: Product):
         return product.unit_price * Decimal(1.09)   # .quantize(Decimal('0.01'))
+    

@@ -23,7 +23,6 @@ class Collection(models.Model):
         ordering = ['title']
 
 class Product(models.Model):
-    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255)
     slug = models.SlugField()
     description = models.TextField(null=True, blank=True)
