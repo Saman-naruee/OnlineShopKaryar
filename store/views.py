@@ -15,35 +15,9 @@ class ProductList(ListCreateAPIView):
     def get_serializer_context(self):
         return {'request': self.request}
 
-# @api_view(['GET', 'POST'])
-# def collection_list(request):
-#     collections = Collection.objects.all()
-#     if request.method == 'GET':
-#         collections = Collection.objects.annotate(products_count=Count('products')).all()
-#         serializer = CollectionSerializer(collections, many=True, context={'request':request})
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-#     elif request.method == 'POST':
-#         serializer = CollectionSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
 class CollectionList(ListCreateAPIView):
     queryset = Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class = CollectionSerializer
-
-# class ProductList(APIView):
-#     def get(request , pk):
-#         queryset = Product.objects.select_related('collection').all()
-#         serializer = ProductSerializer(queryset, many=True, context={'request': request})
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-#     def post(request, pk):
-#         serializer = ProductSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)     
-
-
 
 class ProductDetail(APIView):
     def get(self, request, pk):
@@ -62,24 +36,6 @@ class ProductDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 
-
-
-
-
-# @api_view(['GET', 'PUT', 'DELETE'])
-# def product_detail(request, pk):
-#     product = get_object_or_404(Product, pk=pk)
-#     if request.method == 'GET':
-#         serializer = ProductSerializer(product)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-#     elif request.method == 'PUT':
-#         serializer = ProductSerializer(product, data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return  Response(serializer.data)
-#     elif request.method == 'DELETE':
-#         product.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def collection_detail(request, pk):
