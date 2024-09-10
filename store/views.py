@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Count
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -23,6 +24,7 @@ def product_list(request):
 def collection_list(request):
     collections = Collection.objects.all()
     if request.method == 'GET':
+        collections = Collection.objects.annotate(products_count=Count('products')).all()
         serializer = CollectionSerializer(collections, many=True, context={'request':request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
@@ -48,7 +50,7 @@ def product_detail(request, pk):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def collection_detail(request, pk):
-    collection = get_object_or_404(Collection, pk=pk)
+    collection = get_object_or_404(Collection.objects.annotate(products_count=Count('products')), pk=pk)
     if request.method == "GET":
         serializer = CollectionSerializer(collection, context = {'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)

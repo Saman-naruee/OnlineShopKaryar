@@ -3,15 +3,10 @@ from decimal import Decimal
 from .models import Product, Collection
 
 class CollectionSerializer(serializers.ModelSerializer):  
-    products = serializers.SerializerMethodField()  # Method field for products  
-
     class Meta:  
         model = Collection  
-        fields = ['id', 'title', 'products'] 
-
-    def get_products(self, collection):  
-        data = ProductSerializer(collection.product_set.all(), many=True).data  
-        return len(data)
+        fields = ['id', 'title', 'products_count'] 
+    products_count = serializers.IntegerField()
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
