@@ -18,6 +18,19 @@ def product_list(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    
+@api_view(['GET', 'POST'])
+def collection_list(request):
+    collections = Collection.objects.all()
+    if request.method == 'GET':
+        serializer = CollectionSerializer(collections, many=True, context={'request':request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = CollectionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 @api_view(['GET', 'PUT', 'DELETE'])
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
@@ -32,8 +45,18 @@ def product_detail(request, pk):
     elif request.method == 'DELETE':
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-@api_view()
+
+@api_view(['GET', 'PUT', 'DELETE'])
 def collection_detail(request, pk):
     collection = get_object_or_404(Collection, pk=pk)
-    serializer = CollectionSerializer(collection, context = {'request': request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    if request.method == "GET":
+        serializer = CollectionSerializer(collection, context = {'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'PuT':
+        serializer = CollectionSerializer(collection, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'DELETE':
+        collection.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
