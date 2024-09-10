@@ -71,6 +71,7 @@ class CollectionAdmin(admin.ModelAdmin):
         return super().get_queryset(request).annotate(
             product_count = Count('products')
         )
+    
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
