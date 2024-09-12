@@ -43,22 +43,3 @@ class CollectionDetail(RetrieveUpdateDestroyAPIView):
                         )
         collection.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-
-# @api_view(['GET', 'PUT', 'DELETE'])
-# def collection_detail(request, pk):
-#     collection = get_object_or_404(Collection.objects.annotate(products_count=Count('products')), pk=pk)
-#     if request.method == "GET":
-#         serializer = CollectionSerializer(collection, context = {'request': request})
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-#     elif request.method == 'PuT':
-#         serializer = CollectionSerializer(collection, data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-#     elif request.method == 'DELETE':
-#         collection.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
