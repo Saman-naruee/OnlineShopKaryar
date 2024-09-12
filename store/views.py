@@ -17,27 +17,42 @@ class ProductViewset(ModelViewSet):
     def get_serializer_context(self):
         return {'request': self.request}
 
-    def delete(self, request, pk):
-        product = get_object_or_404(Product, pk=pk)
-        if OrderItem.objects.filter(product=product).exists():
-            return Response({'error': 'product can not be deleted, we have orderitems!'}, 
+    def destroy(self, request, *args, **kwargs):
+        if OrderItem.objects.filter(product_id=kwargs['pk']).count() > 0:
+            return Response({'error': 'product can not be deleted, we have related orderitems!'}, 
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return super().destroy(request, *args, **kwargs)
+
+    # def delete(self, request, pk):
+    #     product = get_object_or_404(Product, pk=pk)
+    #     if OrderItem.objects.filter(product=product).exists():
+    #         return Response({'error': 'product can not be deleted, we have orderitems!'}, 
+    #                     status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    #     product.delete()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class = CollectionSerializer
 
-    def delete(self, request, pk):
-        collection = get_object_or_404(Collection, pk=pk)
-        products_count = Product.objects.filter(collection=collection).count()
-        if products_count > 0:
+    def destroy(self, request, *args, **kwargs):
+        collection = get_object_or_404(Collection, pk=kwargs['pk'])
+        products_count = Product.objects.filter(collection=collection).count() > 0
+        if products_count:
             return Response({'error':'can not delete because there is products associated with this collection'},
                         status=status.HTTP_403_FORBIDDEN
                         )
-        collection.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return super().destroy(request, *args, **kwargs)
+
+    # def delete(self, request, pk):
+    #     collection = get_object_or_404(Collection, pk=pk)
+    #     products_count = Product.objects.filter(collection=collection).count()
+    #     if products_count > 0:
+    #         return Response({'error':'can not delete because there is products associated with this collection'},
+    #                     status=status.HTTP_403_FORBIDDEN
+    #                     )
+    #     collection.delete()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
  # Using viewsets for combine multiple related viws inside a single class: it is a set of related views.
 
