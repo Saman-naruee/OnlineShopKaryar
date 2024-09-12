@@ -1,9 +1,10 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from django_filters.rest_framework import DjangoFilterBackend
 from .models import Product, Collection, OrderItem, Review
 from .serializer import ProductSerializer, CollectionSerializer, ReviewSerializer
 from .filters import ProductFilter
