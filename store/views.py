@@ -8,7 +8,6 @@ from .models import Product, Collection, OrderItem, Review
 from .serializer import ProductSerializer, CollectionSerializer, ReviewSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
-
 from rest_framework.viewsets import ModelViewSet
 
 class ProductViewset(ModelViewSet):
