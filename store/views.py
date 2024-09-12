@@ -2,10 +2,10 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework import status
 from rest_framework.views import APIView
-from .models import Product, Collection
+from .models import Product, Collection, OrderItem
 from .serializer import ProductSerializer, CollectionSerializer
 
 class ProductList(ListCreateAPIView):
@@ -19,19 +19,14 @@ class CollectionList(ListCreateAPIView):
     queryset = Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class = CollectionSerializer
 
-class ProductDetail(APIView):
-    def get(self, request, pk):
-        product = get_object_or_404(Product, pk=pk)
-        serializer = ProductSerializer(product)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    def put(self, request, pk):
-        product = get_object_or_404(Product, pk=pk)
-        serializer = ProductSerializer(product, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return  Response(serializer.data)
+class ProductDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
     def delete(self, request, pk):
         product = get_object_or_404(Product, pk=pk)
+        if OrderItem.objects.filter(product=product).exists():
+            return Response({'error': 'product can not be deleted, we have orderitems!'}, 
+                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
