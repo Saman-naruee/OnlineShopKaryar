@@ -29,20 +29,36 @@ class ProductDetail(RetrieveUpdateDestroyAPIView):
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
 
+class CollectionDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Collection.objects.all()
+    serializer_class = CollectionSerializer
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def collection_detail(request, pk):
-    collection = get_object_or_404(Collection.objects.annotate(products_count=Count('products')), pk=pk)
-    if request.method == "GET":
-        serializer = CollectionSerializer(collection, context = {'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    elif request.method == 'PuT':
-        serializer = CollectionSerializer(collection, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    elif request.method == 'DELETE':
+    def delete(self, request, pk):
+        collection = get_object_or_404(Collection, pk=pk)
+        products_count = Product.objects.filter(collection=collection).count()
+        if products_count > 0:
+            return Response({'error':'can not delete because there is products associated with this collection'},
+                        status=status.HTTP_403_FORBIDDEN
+                        )
         collection.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+
+# @api_view(['GET', 'PUT', 'DELETE'])
+# def collection_detail(request, pk):
+#     collection = get_object_or_404(Collection.objects.annotate(products_count=Count('products')), pk=pk)
+#     if request.method == "GET":
+#         serializer = CollectionSerializer(collection, context = {'request': request})
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#     elif request.method == 'PuT':
+#         serializer = CollectionSerializer(collection, data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#     elif request.method == 'DELETE':
+#         collection.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
