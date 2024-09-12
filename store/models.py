@@ -112,3 +112,11 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
+
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reveiws')
+    name = models.CharField(max_length=255)
+    descriptions = models.TextField()
+    date = models.DateField(auto_now_add=True)
+    
