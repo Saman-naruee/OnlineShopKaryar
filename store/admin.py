@@ -7,6 +7,7 @@ from django.utils.html import format_html, urlencode
 from django.urls import reverse
 from .models import *
 admin.site.register(Promotion)
+admin.site.register(CartItem)
 
 
 class ProductInventoryFilter(admin.SimpleListFilter):
