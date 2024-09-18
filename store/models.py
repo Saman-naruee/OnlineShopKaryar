@@ -100,8 +100,9 @@ class Address(models.Model):
 
     def __str__(self) -> str:
         return f'{self.customer}: {self.city}'
-
+import uuid
 class Cart(models.Model):
+    uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
@@ -109,6 +110,7 @@ class Cart(models.Model):
 
 
 class CartItem(models.Model):
+    uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
