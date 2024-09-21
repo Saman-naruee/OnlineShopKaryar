@@ -90,6 +90,11 @@ class Order(models.Model):
 
     def __str__(self) -> str:
         return f'{self.pk}.Order of {self.customer}'
+    
+    class Meta:
+        permissions = [
+            ('cancel_order', 'Can cancel orders')
+        ]
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
