@@ -79,8 +79,9 @@ class CustomerAdmin(admin.ModelAdmin):
     list_display = ['first_name', 'last_name', 'membership', 'order_count']
     list_editable = ['membership']
     list_per_page = 20
-    search_fields = ['first_name', 'last_name', 'first_name__istartswith', 'last_name__istartswith']
-    
+    search_fields = ['user_first_name', 'user_last_name', 'first_name__istartswith', 'last_name__istartswith']
+    list_select_related = ['user']
+    autocomplete_fields = ['user']
     @admin.display(ordering='order_count')
     def order_count(self, customer):
         related_url = reverse('admin:store_order_changelist')\

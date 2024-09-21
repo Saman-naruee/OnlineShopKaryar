@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'likes',
     'playground',
     'store',
-    'store_custom',
+    'core',
     'tags',
 ]
 
@@ -154,3 +154,5 @@ REST_FRAMEWORK = {
     'COERCE_DECIMAL_TO_STRING': False,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination'
 }
+
+AUTH_USER_MODEL = 'core.User'
