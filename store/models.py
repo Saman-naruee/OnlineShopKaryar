@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.contrib import admin
 from django.core.validators import MinValueValidator
+from django.db import models  
+from mptt.models import MPTTModel, TreeForeignKey  
 
 
 class Promotion(models.Model):
@@ -13,16 +15,19 @@ class Promotion(models.Model):
         return str(self.discount)
 
 
-class Collection(models.Model):
+class Collection(MPTTModel):
     title = models.CharField(max_length=255)
     featured_product = models.ForeignKey(
         'Product', on_delete=models.SET_NULL, null=True, related_name='product', blank=True)
+
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')  
+    attributes_schema = models.JSONField(default=dict) # Stores json schema  
     
     def __str__(self) -> str:
         return self.title
 
-    class Meta:
-        ordering = ['title']
+    class MPTTMeta:  
+        order_insertion_by = ['title']  
 
 class Product(models.Model):
     title = models.CharField(max_length=255)
@@ -135,4 +140,3 @@ class Review(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     date = models.DateField(auto_now_add=True)
-    
