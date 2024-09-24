@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'core',
     'tags',
     'drf_yasg',
+    'djoser'
 ]
 
 MIDDLEWARE = [
