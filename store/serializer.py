@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from decimal import Decimal
-from .models import Product, Collection , Review, Cart, CartItem
+from .models import Product, Collection , Review, Cart, CartItem, Customer
+from core.models import User
 
 class CollectionSerializer(serializers.ModelSerializer):  
     class Meta:  
@@ -85,3 +86,20 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
         fields = ['quantity']
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField()
+    class Meta:
+        model = Customer
+        fields = [
+            'id', 'user_id', 'phone', 'birth_date', 'membership'
+        ]
+    
+    def validate_user_id(self, value):
+        if value < 1:
+            raise serializers.ValidationError("User ID most be positive an not equal to zero.")
+        
+        elif not User.objects.filter(pk=value).exists():
+            raise serializers.ValidationError(f"User with ID {value} does not exists!")
+        
+        return value
