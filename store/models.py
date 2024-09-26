@@ -33,11 +33,7 @@ class Product(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField()
     description = models.TextField(null=True, blank=True)
-    unit_price = models.DecimalField(
-                validators=[MinValueValidator(0)], 
-                max_digits=6,
-                decimal_places=2
-            )
+    unit_price = models.PositiveBigIntegerField()
     inventory = models.PositiveIntegerField()
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name='products')
