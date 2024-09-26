@@ -89,7 +89,7 @@ class CustomViewSet(ModelViewSet):
     @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
     def history(self, request, pk):
         return Response({'Status': 'OK'})
-
+ 
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def me(self, request):
         customer, is_created = Customer.objects.get_or_create(user_id=request.user.id)
