@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from decimal import Decimal
-from .models import Product, Collection , Review, Cart, CartItem, Customer, Order, OrderItem
+from .models import Product, Collection , Review, Cart, CartItem, Customer, Order, OrderItem, Notification
 from core.models import User
 
 class CollectionSerializer(serializers.ModelSerializer):  
@@ -120,3 +120,9 @@ class OrdersListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id', 'placed_at', 'payment_status', 'customer', 'items']
+
+
+class UserNotificationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'

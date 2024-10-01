@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.core.validators import MinValueValidator
 from django.db import models  
 from mptt.models import MPTTModel, TreeForeignKey  
+from core.models import User
 
 
 class Promotion(models.Model):
@@ -141,3 +142,19 @@ class Review(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     date = models.DateField(auto_now_add=True)
+
+
+class Notification(models.Model):
+    READING_STATUS = [
+        ('S', 'Readed'), 
+        ('U', 'Unread')
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_admin = models.BooleanField(default=False)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(choices=READING_STATUS, default='Unread')
+
+    def __str__(self) -> str:
+        return f'{self.message} - {self.user.username}'

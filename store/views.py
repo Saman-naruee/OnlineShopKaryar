@@ -1,21 +1,23 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, IsAdminUser, AllowAny
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from .models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer, Order
+from .models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer, Order, Notification
 from .serializer import ProductSerializer,\
     CollectionSerializer, ReviewSerializer, CartSerializer,\
-    CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, UserProfileSerializer, OrdersListSerializer
+    CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, UserProfileSerializer, OrdersListSerializer, UserNotificationsSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
 from rest_framework.viewsets import ModelViewSet
+
 
 class ProductViewset(ModelViewSet):
     queryset = Product.objects.all()
@@ -116,3 +118,21 @@ class OrderViewSet(ModelViewSet):
         # customer_id is not included in the json web token and we have to calculate it from user id:
         customer_id, created = Customer.objects.only('id').get_or_create(user_id=current_user.id)
         return Order.objects.filter(customer_id=customer_id)
+
+class NotificationViewSet(ModelViewSet):
+    queryset = Notification.objects.all()
+    serializer_class = UserNotificationsSerializer
+    permission_classes = [AllowAny]
+
+    def list(self, request):
+        last_received = request.query_params.get('LastRecieved')
+        if last_received:
+            last_received = timezone.datetime.fromisoformat(last_received)
+            notifications = Notification.objects.filter(created_at__gt=last_received)
+        else:
+            notifications = Notification.objects.all()
+        serializer = UserNotificationsSerializer(notifications, many=True)
+        return Response(serializer.data)
+    
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
