@@ -4,15 +4,15 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, IsAdminUser
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from .models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer
+from .models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer, Order
 from .serializer import ProductSerializer,\
     CollectionSerializer, ReviewSerializer, CartSerializer,\
-    CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, UserProfileSerializer
+    CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, UserProfileSerializer, OrdersListSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
 from rest_framework.viewsets import ModelViewSet
@@ -103,3 +103,16 @@ class CustomViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+
+class OrderViewSet(ModelViewSet):
+    serializer_class = OrdersListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        current_user = self.request.user
+        if current_user.is_staff:
+            return Order.objects.all()
+        
+        # customer_id is not included in the json web token and we have to calculate it from user id:
+        customer_id, created = Customer.objects.only('id').get_or_create(user_id=current_user.id)
+        return Order.objects.filter(customer_id=customer_id)

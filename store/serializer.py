@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from decimal import Decimal
-from .models import Product, Collection , Review, Cart, CartItem, Customer
+from .models import Product, Collection , Review, Cart, CartItem, Customer, Order, OrderItem
 from core.models import User
 
 class CollectionSerializer(serializers.ModelSerializer):  
@@ -103,3 +103,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"User with ID {value} does not exists!")
         
         return value
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    """
+        Client does not have send additional request for each product in the order.
+        we only serialize a few information about the product.
+    """
+    product = SimpleProductSerializer()
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product', 'unit_price', 'quantity']
+
+
+class OrdersListSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
+    class Meta:
+        model = Order
+        fields = ['id', 'placed_at', 'payment_status', 'customer', 'items']

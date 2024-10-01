@@ -8,6 +8,7 @@ router.register('products', ProductViewset, basename='products')
 router.register('collections', CollectionViewSet)
 router.register('carts', CartViewSet)
 router.register('customers', CustomViewSet)
+router.register('orders', OrderViewSet, basename='orders') # basename : required when overriding get_queryset instead of queryset, cause drf can not feagure out.
 
 products_router = routers.NestedDefaultRouter(router, 'products', lookup='product')
 products_router.register('reviews', ReviewViewSet, basename='product-reviews')
