@@ -14,7 +14,7 @@ from .models import Product, Collection, OrderItem, Review, Cart, CartItem, Cust
 from .serializer import ProductSerializer,\
     CollectionSerializer, ReviewSerializer, CartSerializer,\
     CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer,\
-    UserProfileSerializer, OrdersListSerializer, UserNotificationsSerializer
+    UserProfileSerializer, OrderListSerializer, UserNotificationsSerializer, CreateOrderSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
 from rest_framework.viewsets import ModelViewSet
@@ -108,8 +108,18 @@ class CustomViewSet(ModelViewSet):
             return Response(serializer.data)
 
 class OrderViewSet(ModelViewSet):
-    serializer_class = OrdersListSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateOrderSerializer
+        return OrderListSerializer
+
+    def get_serializer_context(self):
+        context = {
+            'user_id', self.request.user.id
+        }
+        return context
 
     def get_queryset(self):
         current_user = self.request.user

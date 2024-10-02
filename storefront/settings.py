@@ -160,12 +160,12 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny', # IsAuthenticated
+        'rest_framework.permissions.IsAuthenticated', # AllowAny
     ]
 }
 
 SIMPLE_JWT = {
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+   'ACCESS_TOKEN_LIFETIME': timedelta(days=90),
    'AUTH_HEADER_TYPES': ('JWT',)
 }
 
