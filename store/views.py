@@ -13,7 +13,8 @@ from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from .models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer, Order, Notification
 from .serializer import ProductSerializer,\
     CollectionSerializer, ReviewSerializer, CartSerializer,\
-    CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, UserProfileSerializer, OrdersListSerializer, UserNotificationsSerializer
+    CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer,\
+    UserProfileSerializer, OrdersListSerializer, UserNotificationsSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
 from rest_framework.viewsets import ModelViewSet
@@ -135,4 +136,14 @@ class NotificationViewSet(ModelViewSet):
         return Response(serializer.data)
     
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        serializer = UserNotificationsSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def destroy(self, request, *args, **kwargs):
+        id = kwargs.get('pk')
+        notification = get_object_or_404(Notification, pk=id)
+        notification.delete()
+        return Response({"Message":"Notification Deleted."}, status=status.HTTP_204_NO_CONTENT)
