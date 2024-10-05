@@ -117,7 +117,7 @@ class OrderViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         context = {
-            'user_id', self.request.user.id
+            'user_id': self.request.user.id
         }
         return context
 
