@@ -125,6 +125,13 @@ class OrderListSerializer(serializers.ModelSerializer):
 class CreateOrderSerializer(serializers.Serializer):
     cart_id = serializers.UUIDField()
 
+    def validate_cart_id(self, cart_id): # Ensure to cart_id exist, to stop create empty orders , without any itmes.
+        if not Cart.objects.filter(pk=cart_id).exists():
+            raise serializers.ValidationError('No Cart with given ID was found!')
+        if CartItem.objects.filter(cart_id=cart_id).count() == 0:
+            raise serializers.ValidationError('The Cart Is Empty!')
+        return cart_id
+
     def save(self, **kwargs):
         with transaction.atomic():
             cart_id = self.validated_data['cart_id']
