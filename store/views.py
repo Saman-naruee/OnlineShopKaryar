@@ -135,7 +135,7 @@ class OrderViewSet(ModelViewSet):
         elif self.request.method == 'PATCH':
             return UpdateOrderSerializer
         return OrderListSerializer
-
+ 
     def get_queryset(self):
         current_user = self.request.user
         if current_user.is_staff:
