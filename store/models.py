@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator
 from django.db import models  
 from mptt.models import MPTTModel, TreeForeignKey  
 from core.models import User
+# import pillow
 
 
 class Promotion(models.Model):
@@ -45,6 +46,10 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['title']
+
+class ProductImages(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='media/products')
 
 class Customer(models.Model):
     MEMBERSHIP_BRONZE = 'B'
