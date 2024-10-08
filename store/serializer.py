@@ -1,3 +1,4 @@
+from operator import truediv
 from django.db import transaction
 from rest_framework import serializers
 from decimal import Decimal
@@ -11,10 +12,24 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'products_count'] 
     products_count = serializers.IntegerField(read_only=True)
 
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        product_id = self.context['product_id']
+        return ProductImages.objects.create(product_id=product_id, **validated_data)
+    class Meta:
+        model = ProductImages
+        fields = ['id', 'image']
+
 class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
     class Meta:
         model = Product
-        fields = ['id', 'slug', 'title', 'description', 'unit_price', 'inventory', 'price_with_tax', 'collection'] # we can keep other non-existing fields down the bottom like before.
+        fields = [
+            'id', 'slug', 'title', 'description', 'unit_price',
+            'inventory', 'price_with_tax', 'collection', 'images'
+            ] # we can keep other non-existing fields down the bottom like before.
+        
     collection = serializers.PrimaryKeyRelatedField(queryset=Collection.objects.all())
     price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')
     def calculate_tax(self, product: Product):
@@ -163,11 +178,3 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
         model = Notification
         fields = '__all__'
 
-
-class ProductImageSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        product_id = self.context['product_id']
-        return ProductImages.objects.create(product_id=product_id, **validated_data)
-    class Meta:
-        model = ProductImages
-        fields = ['id', 'image']
