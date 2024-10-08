@@ -10,12 +10,14 @@ from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from .models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer, Order, Notification
+from .models import Product, Collection, OrderItem, Review, Cart, \
+    CartItem, Customer, Order, Notification, ProductImages
+
 from .serializer import ProductSerializer,\
     CollectionSerializer, ReviewSerializer, CartSerializer,\
     CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer,\
     UserProfileSerializer, OrderListSerializer, UserNotificationsSerializer, \
-    CreateOrderSerializer, UpdateOrderSerializer
+    CreateOrderSerializer, UpdateOrderSerializer, ProductImageSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
 from rest_framework.viewsets import ModelViewSet
@@ -172,3 +174,10 @@ class NotificationViewSet(ModelViewSet):
         notification = get_object_or_404(Notification, pk=id)
         notification.delete()
         return Response({"Message":"Notification Deleted."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class ProductImageViewSet(ModelViewSet):
+    serializer_class = ProductImageSerializer
+
+    def get_queryset(self):
+        return ProductImages.objects.filter(product_id=self.kwargs['product_pk']) # to get product_pk from url: <-

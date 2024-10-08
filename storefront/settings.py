@@ -158,21 +158,27 @@ INTERNAL_IPS = [
     '127.0.0.1'
 ]
 
-REST_FRAMEWORK = {
-    'COERCE_DECIMAL_TO_STRING': False,
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated', # AllowAny
-    ]
-}
+DEVELOPER_MODE = True
 
-SIMPLE_JWT = {
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=90),
-   'AUTH_HEADER_TYPES': ('JWT',)
-}
+if not DEVELOPER_MODE:
+    REST_FRAMEWORK = {
+        'COERCE_DECIMAL_TO_STRING': False,
+        # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework_simplejwt.authentication.JWTAuthentication',
+        ),
+        'DEFAULT_PERMISSION_CLASSES': [
+            'rest_framework.permissions.IsAuthenticated', # AllowAny
+        ]
+    }
+
+    SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=90),
+    'AUTH_HEADER_TYPES': ('JWT',)
+    }
+
+
+
 
 DJOSER = {
     'SERIALIZERS':{

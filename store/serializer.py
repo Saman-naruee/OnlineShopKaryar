@@ -1,7 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
 from decimal import Decimal
-from .models import Product, Collection , Review, Cart, CartItem, Customer, Order, OrderItem, Notification
+from .models import Product, Collection , Review, Cart, CartItem, \
+      Customer, Order, OrderItem, Notification, ProductImages
 from core.models import User
 
 class CollectionSerializer(serializers.ModelSerializer):  
@@ -163,3 +164,10 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        product_id = self.context['product_id']
+        return ProductImages.objects.create(product_id=product_id, **validated_data)
+    class Meta:
+        model = ProductImages
+        fields = ['id', 'image']
