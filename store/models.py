@@ -156,7 +156,7 @@ class Notification(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    is_admin = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False) # if user is admin
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(choices=READING_STATUS, default='Unread')

@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
-
+from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -93,11 +93,11 @@ WSGI_APPLICATION = 'storefront.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'store',  
-        'USER': 'postgres',
-        'PASSWORD': 'Saman36117',
-        'HOST': '127.0.0.1', 
-        'PORT': '5432',
+        'NAME': config('DATABASE'),  
+        'USER': config('USER'),
+        'PASSWORD': config('PASSWORD'),
+        'HOST': config('HOST'), 
+        'PORT': config('PORT'),
     }
 }
 
@@ -174,13 +174,14 @@ if not DEVELOPER_MODE:
 
     SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=90),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
     'AUTH_HEADER_TYPES': ('JWT',)
     }
 
 
 
 
-DJOSER = {
+DJOSER = { # uses for user registration and login
     'SERIALIZERS':{
         'user_create': 'core.serializers.UserCreateSerializer',
         'current_user': 'core.serializers.UserDetailSerializer'

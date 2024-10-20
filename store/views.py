@@ -97,7 +97,7 @@ class CustomViewSet(ModelViewSet):
         return Response({'Status': 'OK'})
  
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
-    def me(self, request):
+    def me(self, request): # this is for user profile, and 'me' shows 
         customer, is_created = Customer.objects.get_or_create(user_id=request.user.id)
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication credentials were not provided."}, status=401)
