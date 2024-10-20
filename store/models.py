@@ -1,3 +1,4 @@
+from ast import mod
 from django.db import models
 from django.conf import settings
 from django.contrib import admin
@@ -127,6 +128,7 @@ import uuid
 class Cart(models.Model):
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='carts')
 
     def __str__(self) -> str:
         return str(self.created_at)
