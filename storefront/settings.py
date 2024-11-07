@@ -43,16 +43,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
+
+    # Third party apps
     'debug_toolbar',
     'django_filters',
     'rest_framework',
+    'drf_yasg',
+    'djoser'
+
+    # Apps
     'likes',
     'playground',
     'store',
     'core',
     'tags',
-    'drf_yasg',
-    'djoser'
 ]
 
 MIDDLEWARE = [
@@ -173,8 +177,8 @@ if not DEVELOPER_MODE:
     }
 
     SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=90),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME')),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME')),
     'AUTH_HEADER_TYPES': ('JWT',)
     }
 
