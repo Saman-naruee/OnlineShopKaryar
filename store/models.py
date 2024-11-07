@@ -1,5 +1,12 @@
+from ast import mod
 from django.db import models
+from django.conf import settings
+from django.contrib import admin
 from django.core.validators import MinValueValidator
+from django.db import models  
+from mptt.models import MPTTModel, TreeForeignKey  
+from core.models import User
+# import pillow
 
 
 class Promotion(models.Model):
@@ -11,30 +18,28 @@ class Promotion(models.Model):
         return str(self.discount)
 
 
-class Collection(models.Model):
+class Collection(MPTTModel):
     title = models.CharField(max_length=255)
     featured_product = models.ForeignKey(
-        'Product', on_delete=models.SET_NULL, null=True, related_name='+', blank=True)
+        'Product', on_delete=models.SET_NULL, null=True, related_name='product', blank=True)
+
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')  
+    attributes_schema = models.JSONField(default=dict) # Stores json schema  
     
     def __str__(self) -> str:
         return self.title
 
-    class Meta:
-        ordering = ['title']
+    class MPTTMeta:  
+        order_insertion_by = ['title']  
 
 class Product(models.Model):
-    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255)
     slug = models.SlugField()
     description = models.TextField(null=True, blank=True)
-    unit_price = models.DecimalField(
-                validators=[MinValueValidator(0)], 
-                max_digits=6,
-                decimal_places=2
-            )
+    unit_price = models.PositiveBigIntegerField()
     inventory = models.PositiveIntegerField()
     last_update = models.DateTimeField(auto_now=True)
-    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
+    collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name='products')
     promotions = models.ManyToManyField(Promotion, blank=True)
 
     def __str__(self) -> str:
@@ -42,6 +47,10 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['title']
+
+class ProductImages(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='media/products')
 
 class Customer(models.Model):
     MEMBERSHIP_BRONZE = 'B'
@@ -53,19 +62,28 @@ class Customer(models.Model):
         (MEMBERSHIP_SILVER, 'Silver'),
         (MEMBERSHIP_GOLD, 'Gold'),
     ]
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    email = models.EmailField(unique=True)
+
     phone = models.CharField(max_length=255)
     birth_date = models.DateField(null=True)
     membership = models.CharField(
         max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    @admin.display(ordering='user__first_name')
+    def first_name(self):
+        return self.user.first_name
+    
+    @admin.display(ordering='user__last_name')
+    def last_name(self):
+        return self.user.last_name
     
     def __str__(self) -> str:
-        return f"Mr.{self.last_name}"
+        return f"Mr.{self.user.last_name}"
     
     class Meta:
-        ordering = ['last_name']
+        permissions = [
+            ('view_history', 'Can View History')
+        ]
 
 
 class Order(models.Model):
@@ -85,9 +103,14 @@ class Order(models.Model):
 
     def __str__(self) -> str:
         return f'{self.pk}.Order of {self.customer}'
-
+    
+    class Meta:
+        permissions = [
+            ('cancel_order', 'Can cancel orders')
+        ]
+ 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.PROTECT)
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
@@ -101,15 +124,44 @@ class Address(models.Model):
 
     def __str__(self) -> str:
         return f'{self.customer}: {self.city}'
-
+import uuid
 class Cart(models.Model):
+    uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='carts')
 
     def __str__(self) -> str:
-        return self.created_at
+        return str(self.created_at)
 
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
+
+    class Meta:
+        unique_together = [['cart', 'product']]
+
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reveiws')
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    date = models.DateField(auto_now_add=True)
+
+
+class Notification(models.Model):
+    READING_STATUS = [
+        ('S', 'Readed'), 
+        ('U', 'Unread')
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_admin = models.BooleanField(default=False) # if user is admin
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(choices=READING_STATUS, default='Unread')
+
+    def __str__(self) -> str:
+        return f'{self.message} - {self.user.username}'

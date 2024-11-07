@@ -11,10 +11,16 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-
+from datetime import timedelta
+import os
+from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# media dir:
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -38,12 +44,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'debug_toolbar',
+    'django_filters',
     'rest_framework',
     'likes',
     'playground',
     'store',
-    'store_custom',
+    'core',
     'tags',
+    'drf_yasg',
+    'djoser'
 ]
 
 MIDDLEWARE = [
@@ -84,11 +93,11 @@ WSGI_APPLICATION = 'storefront.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'storefront2', 
-        'USER': 'postgres',
-        'PASSWORD': 'Saman36117',
-        'HOST': '127.0.0.1', 
-        'PORT': '5432',
+        'NAME': config('DATABASE'),  
+        'USER': config('USER'),
+        'PASSWORD': config('PASSWORD'),
+        'HOST': config('HOST'), 
+        'PORT': config('PORT'),
     }
 }
 
@@ -148,3 +157,35 @@ if TESTING:
 INTERNAL_IPS = [
     '127.0.0.1'
 ]
+
+DEVELOPER_MODE = True
+
+if not DEVELOPER_MODE:
+    REST_FRAMEWORK = {
+        'COERCE_DECIMAL_TO_STRING': False,
+        # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework_simplejwt.authentication.JWTAuthentication',
+        ),
+        'DEFAULT_PERMISSION_CLASSES': [
+            'rest_framework.permissions.IsAuthenticated', # AllowAny
+        ]
+    }
+
+    SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=90),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
+    'AUTH_HEADER_TYPES': ('JWT',)
+    }
+
+
+
+
+DJOSER = { # uses for user registration and login
+    'SERIALIZERS':{
+        'user_create': 'core.serializers.UserCreateSerializer',
+        'current_user': 'core.serializers.UserDetailSerializer'
+    }
+}
+
+AUTH_USER_MODEL = 'core.User'
