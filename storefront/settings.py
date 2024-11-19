@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework',
     'drf_yasg',
-    'djoser'
+    'djoser',
 
     # Apps
     'likes',
