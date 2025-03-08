@@ -8,3 +8,5 @@ media**
 .env/
 .env
 env/
+.venv
+venv/
