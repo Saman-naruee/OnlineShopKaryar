@@ -50,23 +50,34 @@ StoreFront is a Django-based e-commerce platform with a RESTful API. It provides
 ### Clone the Repository
 To get started with the StoreFront project, clone the repository to your local machine:
 
-
+```bash
 git clone https://github.com/Saman-naruee/OnlineShopKaryar.git
+```
+```bash
 cd OnlineShopKaryar
+```
 
 ### Settup a virtual environment
+```bash
 python -m venv venv
+```
+```bash
 source venv/bin/activate
+```
 
 ### Installl Dependencies
+```bash
 Install the required Python packages using pip:
-
+```
+```bash
 pip install -r requirements.txt
+```
 ### Database Setup
 Set up the PostgreSQL database and update the database settings in the settings.py file.
 
-Environment Variables
+## Environment Variables:
 Create a .env file in the root directory and add the following variables:
+
 SECRET_KEY=your_secret_key
 DATABASE=your_database_name
 USER=your_database_user
@@ -76,15 +87,22 @@ PORT=your_database_port
 
 ### Run  Migrations:
 Apply the database migrations:
-
+```bash
 python manage.py makemigrations
+```
+```bash
 python  manage.py migrate
+```
 
 ### Create Superuser
+```bash
 python manage.py createsuperuser
+```
 
 ### Run the Development Server
+```bash
 python manage.py runserver
+```
 
 ### More info:
 The application is now running at http://localhost:8000.

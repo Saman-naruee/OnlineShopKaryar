@@ -24,6 +24,9 @@ from rest_framework.viewsets import ModelViewSet
 
 
 class ProductViewset(ModelViewSet):
+    """
+    A viewset for viewing and editing product instances.
+    """
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -43,6 +46,9 @@ class ProductViewset(ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 class CollectionViewSet(ModelViewSet):
+    """
+    A viewset for viewing and editing collection instances.
+    """
     queryset = Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
@@ -58,6 +64,9 @@ class CollectionViewSet(ModelViewSet):
 
 
 class ReviewViewSet(ModelViewSet):
+    """
+    A viewset for viewing and editing review instances.
+    """
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
@@ -67,11 +76,17 @@ class ReviewViewSet(ModelViewSet):
         return {'product_id': self.kwargs['product_pk']}
 
 class CartViewSet(CreateModelMixin, DestroyModelMixin,
-                RetrieveModelMixin, GenericViewSet, ListModelMixin):  
+                RetrieveModelMixin, GenericViewSet, ListModelMixin):
+    """
+    A viewset for viewing and editing cart instances.
+    """
     queryset = Cart.objects.prefetch_related('items__product').all()
     serializer_class = CartSerializer
  
 class CartitemViewSet(ModelViewSet):
+    """
+    A viewset for viewing and editing cart item instances.
+    """
     http_method_names = ['get', 'post', 'patch', 'delete']
     
     def get_serializer_class(self):
@@ -88,6 +103,9 @@ class CartitemViewSet(ModelViewSet):
         return CartItem.objects.filter(cart_id=self.kwargs['cart_pk']).select_related('product')
 
 class CustomViewSet(ModelViewSet):
+    """
+    A viewset for viewing and editing customer instances.
+    """
     queryset = Customer.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = [IsAdminUser]
@@ -111,6 +129,9 @@ class CustomViewSet(ModelViewSet):
             return Response(serializer.data)
 
 class OrderViewSet(ModelViewSet):
+    """
+    A viewset for viewing and editing order instances.
+    """
     http_method_names = ['get', 'patch', 'delete', 'head', 'options']
 
     def get_permissions(self):
@@ -148,6 +169,9 @@ class OrderViewSet(ModelViewSet):
         return Order.objects.filter(customer_id=customer_id)
 
 class NotificationViewSet(ModelViewSet):
+    """
+    A viewset for viewing and editing notification instances.
+    """
     queryset = Notification.objects.all()
     serializer_class = UserNotificationsSerializer
     permission_classes = [AllowAny]
@@ -177,6 +201,9 @@ class NotificationViewSet(ModelViewSet):
 
 
 class ProductImageViewSet(ModelViewSet):
+    """
+    A viewset for viewing and editing product image instances.
+    """
     serializer_class = ProductImageSerializer
 
     def get_queryset(self):
