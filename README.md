@@ -61,6 +61,18 @@ python -m venv venv
 source venv/bin/activate
 ```
 
+### Setup a virtual environment 2
+
+<div>
+  <button onclick="showCommands('windows')">Windows</button>
+  <button onclick="showCommands('linux')">Linux/Mac</button>
+</div>
+
+<div id="windows" style="display:none;">
+  ```bash
+  python -m venv venv
+
+
 ### Installl Dependencies
 ```bash
 Install the required Python packages using pip:
