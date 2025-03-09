@@ -61,20 +61,6 @@ python -m venv venv
 source venv/bin/activate
 ```
 
-### Setup a virtual environment 2
-
-<div>
-  <button onclick="showCommands('windows')">Windows</button>
-  <button onclick="showCommands('linux')">Linux/Mac</button>
-</div>
-
-<div id="windows" style="display:none;">
-  ```bash
-  python -m venv venv
-  ```
-</div>
-
-
 ### Installl Dependencies
 ```bash
 Install the required Python packages using pip:
@@ -87,13 +73,14 @@ Set up the PostgreSQL database and update the database settings in the settings.
 
 ## Environment Variables:
 Create a .env file in the root directory and add the following variables:
-
+```PlainText
 SECRET_KEY=your_secret_key
 DATABASE=your_database_name
 USER=your_database_user
 PASSWORD=your_database_password
 HOST=your_database_host
 PORT=your_database_port
+```
 
 ### Run  Migrations:
 Apply the database migrations:
