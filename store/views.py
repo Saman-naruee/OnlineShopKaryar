@@ -208,3 +208,6 @@ class ProductImageViewSet(ModelViewSet):
 
     def get_queryset(self):
         return ProductImages.objects.filter(product_id=self.kwargs['product_pk']) # to get product_pk from url: <-
+    
+    def get_serializer_context(self):
+        return {'product_pk': self.kwargs['product_pk'], 'request': self.request}

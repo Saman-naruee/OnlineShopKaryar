@@ -15,11 +15,12 @@ class CollectionSerializer(serializers.ModelSerializer):
 
 class ProductImageSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
-        product_id = self.context['product_id']
+        product_id = self.context['product_pk']
         return ProductImages.objects.create(product_id=product_id, **validated_data)
+    
     class Meta:
         model = ProductImages
-        fields = ['id', 'image']
+        fields = ['pk', 'image']
 
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
