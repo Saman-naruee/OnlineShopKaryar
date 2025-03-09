@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from ctypes import cast
 from pathlib import Path
 from datetime import timedelta
 import os
@@ -162,7 +163,7 @@ INTERNAL_IPS = [
     '127.0.0.1'
 ]
 
-DEVELOPER_MODE = True
+DEVELOPER_MODE = False
 
 if not DEVELOPER_MODE:
     REST_FRAMEWORK = {
@@ -177,8 +178,8 @@ if not DEVELOPER_MODE:
     }
 
     SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME')),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME')),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', cast=int)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', cast=int)),
     'AUTH_HEADER_TYPES': ('JWT',)
     }
 
