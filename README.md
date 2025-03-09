@@ -1,11 +1,7 @@
-from django.test import TestCase
-
-# Create your tests here.
-
-# StoreFront Project
+# E Commerce Project
 
 ## Overview
-StoreFront is a Django-based e-commerce platform with a RESTful API. It provides a robust backend for managing products, collections, carts, orders, and customer interactions.
+E Commerce is a Django-based e-commerce platform with a RESTful API. It provides a robust backend for managing products, collections, carts, orders, and customer interactions.
 
 ## Key Features
 - Product management with detailed information and image support
@@ -48,7 +44,7 @@ StoreFront is a Django-based e-commerce platform with a RESTful API. It provides
 - PostgreSQL
 
 ### Clone the Repository
-To get started with the StoreFront project, clone the repository to your local machine:
+To get started with the E Commerce project, clone the repository to your local machine:
 
 ```bash
 git clone https://github.com/Saman-naruee/OnlineShopKaryar.git
@@ -112,7 +108,7 @@ Access the admin panel at http://localhost:8000/admin.
 ### Contributing
 Contributions are welcome! Please fork the repository and submit a pull request.
 
-Contributions to the StoreFront project are welcome! Please follow these steps:
+Contributions to the E Commerce project are welcome! Please follow these steps:
 
     1.fork the repository.
     2.Create a new branch for your feature or bug fix.
@@ -121,3 +117,4 @@ Contributions to the StoreFront project are welcome! Please follow these steps:
     5.Submit a pull request to the main repository.
     6.Provide a clear description of your changes and why they should be merged.
     7.Your pull request will be reviewed, and if everything looks good, it will be merged into the main project.
+
