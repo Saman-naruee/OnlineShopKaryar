@@ -163,9 +163,9 @@ INTERNAL_IPS = [
     '127.0.0.1'
 ]
 
-DEVELOPER_MODE = False
+DEVELOPER_MODE = True
 
-if not DEVELOPER_MODE:
+if DEVELOPER_MODE:
     REST_FRAMEWORK = {
         'COERCE_DECIMAL_TO_STRING': False,
         # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -173,7 +173,7 @@ if not DEVELOPER_MODE:
             'rest_framework_simplejwt.authentication.JWTAuthentication',
         ),
         'DEFAULT_PERMISSION_CLASSES': [
-            'rest_framework.permissions.IsAuthenticated', # AllowAny
+            'rest_framework.permissions.IsAuthenticated',
         ]
     }
 

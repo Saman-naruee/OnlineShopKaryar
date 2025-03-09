@@ -31,7 +31,7 @@ class ProductViewset(ModelViewSet):
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     pagination_class = DefaultPagination
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly] # IsAuthenticated
     filterset_class = ProductFilter
     search_fields = ['title', 'description']
     ordering_fields = ['unit_price', 'last_update']
