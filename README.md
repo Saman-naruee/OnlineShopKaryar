@@ -71,6 +71,8 @@ source venv/bin/activate
 <div id="windows" style="display:none;">
   ```bash
   python -m venv venv
+  ```
+</div>
 
 
 ### Installl Dependencies
