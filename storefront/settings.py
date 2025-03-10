@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'djoser',
+    'corsheaders',
 
     # Apps
     'likes',
@@ -61,6 +62,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -194,3 +197,8 @@ DJOSER = { # uses for user registration and login
 }
 
 AUTH_USER_MODEL = 'core.User'
+
+
+CORS_HEADERS_ORIGINS = [
+    # ADD ALLOWED DOMAINS
+]
