@@ -24,12 +24,25 @@ class ProductInventoryFilter(admin.SimpleListFilter):
         elif self.value() == '>30':
             return queryset.filter(inventory__gt=30)
 
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImages
+    max_num = 10
+    readonly_fields = ['thumbnail']
+    
+    def thumbnail(self, instance):
+        if instance.image.name != '':
+            return format_html(f'<img src="{instance.image.url}" width="80" height="60" />')
+        return ''
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     autocomplete_fields = ['collection']
     prepopulated_fields = {
         'slug': ['title']
     }
+    inlines = [ProductImageInline]
     actions = ['clear_inventory']
     list_display = ['title', 'unit_price', 'collection', 'inventory_status', 'inventory']    
     list_per_page = 20
@@ -51,6 +64,9 @@ class ProductAdmin(admin.ModelAdmin):
             f'{inventory_count} products were successfully updated.',
             messages.SUCCESS
         )
+
+
+
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'product_count'] # second field: to find out how many products we have related to collection.
