@@ -27,7 +27,7 @@ class ProductViewset(ModelViewSet):
     """
     A viewset for viewing and editing product instances.
     """
-    queryset = Product.objects.all()
+    queryset = Product.objects.prefetch_related('images').all() # To decrease the number of queries of the database, grab images of each product.
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     pagination_class = DefaultPagination
