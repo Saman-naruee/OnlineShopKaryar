@@ -1,4 +1,5 @@
 from ast import mod
+from attr import validate
 from django.db import models
 from django.conf import settings
 from django.contrib import admin
@@ -6,6 +7,7 @@ from django.core.validators import MinValueValidator
 from django.db import models  
 from mptt.models import MPTTModel, TreeForeignKey  
 from core.models import User
+from .validators import validate_image_size
 # import pillow
 
 
@@ -50,7 +52,10 @@ class Product(models.Model):
 
 class ProductImages(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='media/products')
+    image = models.ImageField(
+        upload_to='media/products',
+        validators=[validate_image_size]
+        )
 
 class Customer(models.Model):
     MEMBERSHIP_BRONZE = 'B'
