@@ -163,7 +163,7 @@ INTERNAL_IPS = [
     '127.0.0.1'
 ]
 
-DEVELOPER_MODE = True
+DEVELOPER_MODE = False # Must be true just in development you can set it to false
 
 if DEVELOPER_MODE:
     REST_FRAMEWORK = {
