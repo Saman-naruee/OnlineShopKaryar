@@ -10,3 +10,4 @@ media**
 env/
 .venv
 venv/
+playground/files/*

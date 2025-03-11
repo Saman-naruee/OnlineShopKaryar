@@ -206,7 +206,10 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
 EMAIL_PORT = 2525
 DEFAULT_FROM_EMAIL = 'narueesaman@gmail.com'
-
+ADMINS = [
+    ('Naruee Saman', 'narueesaman@gmail.com'),
+    ('Saman', 'samannaruee@gmail')
+]
 CORS_HEADERS_ORIGINS = [
     # ADD ALLOWED DOMAINS
 ]
