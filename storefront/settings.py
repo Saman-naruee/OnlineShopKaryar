@@ -14,7 +14,9 @@ from ctypes import cast
 from pathlib import Path
 from datetime import timedelta
 import os
+from unittest.mock import DEFAULT
 from decouple import config
+from django import conf
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -198,6 +200,12 @@ DJOSER = { # uses for user registration and login
 
 AUTH_USER_MODEL = 'core.User'
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
+EMAIL_PORT = 2525
+DEFAULT_FROM_EMAIL = 'narueesaman@gmail.com'
 
 CORS_HEADERS_ORIGINS = [
     # ADD ALLOWED DOMAINS
