@@ -103,12 +103,12 @@ python manage.py runserver
 ### More info:
 The application is now running at :
 ```url
-http://localhost:8000.
+http://localhost:8000
 ```
 
 Access the admin panel at :
 ```url
-http://localhost:8000/admin.
+http://localhost:8000/admin
 ```
 
 ### Contributing
