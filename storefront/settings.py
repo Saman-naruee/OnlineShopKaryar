@@ -103,11 +103,14 @@ WSGI_APPLICATION = 'storefront.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': config('DATABASE'),  
-        'USER': config('USER'),
-        'PASSWORD': config('PASSWORD'),
-        'HOST': config('HOST'), 
-        'PORT': config('PORT'),
+        'NAME': config('DATABASE', cast=str),
+        'USER': config('USER', cast=str),
+        'PASSWORD': config('PASSWORD', cast=str),
+        'HOST': config('HOST', cast=str),
+        'PORT': config('PORT', cast=str),
+        'OPTIONS': {
+            'options': '-c search_path=public'
+        },
     }
 }
 
@@ -183,8 +186,8 @@ if DEVELOPER_MODE:
     }
 
     SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', cast=int)),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', cast=int)),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=999999999),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=999999999),
     'AUTH_HEADER_TYPES': ('JWT',)
     }
 
@@ -203,7 +206,7 @@ AUTH_USER_MODEL = 'core.User'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'localhost'
 EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
+EMAIL_HOST_PASSWORD = 'Saman3334ksk2$@'
 EMAIL_PORT = 2525
 DEFAULT_FROM_EMAIL = 'narueesaman@gmail.com'
 ADMINS = [
@@ -213,3 +216,8 @@ ADMINS = [
 CORS_HEADERS_ORIGINS = [
     # ADD ALLOWED DOMAINS
 ]
+
+'''
+to install django requirements:
+    django-filters: 
+'''
