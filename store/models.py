@@ -23,16 +23,15 @@ class Promotion(models.Model):
 class Collection(MPTTModel):
     title = models.CharField(max_length=255)
     featured_product = models.ForeignKey(
-        'Product', on_delete=models.SET_NULL, null=True, related_name='product', blank=True)
+        'Product', on_delete=models.SET_NULL, null=True, blank=True, related_name='featured_in_collections')
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+    attributes_schema = models.JSONField(default=dict)
 
-    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')  
-    attributes_schema = models.JSONField(default=dict) # Stores json schema  
-    
+    class MPTTMeta:
+        order_insertion_by = ['title']
+
     def __str__(self) -> str:
         return self.title
-
-    class MPTTMeta:  
-        order_insertion_by = ['title']  
 
 class Product(models.Model):
     title = models.CharField(max_length=255)
@@ -166,7 +165,7 @@ class Notification(models.Model):
     is_admin = models.BooleanField(default=False) # if user is admin
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(choices=READING_STATUS, default='Unread')
+    status = models.CharField(max_length=1, choices=READING_STATUS, default='U')
 
     def __str__(self) -> str:
         return f'{self.message} - {self.user.username}'
