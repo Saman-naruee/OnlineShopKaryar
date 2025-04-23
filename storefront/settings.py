@@ -230,3 +230,5 @@ CORS_HEADERS_ORIGINS = [
 to install django requirements:
     django-filters: 
 '''
+
+CELERY_BROKER_URL = 'redis://localhost:6379/1'
