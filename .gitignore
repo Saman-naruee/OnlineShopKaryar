@@ -4,7 +4,6 @@ __pycache__/
 .env
 media/
 media**
-.vscode/
 .env/
 .env
 env/
