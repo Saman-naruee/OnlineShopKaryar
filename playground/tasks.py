@@ -2,7 +2,7 @@ from celery import shared_task
 from time import sleep
 
 @shared_task
-def email_sender(message):
+def notify_customers(message):
     """
     A simple example of a Celery task.
     
