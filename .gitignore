@@ -1,4 +1,4 @@
-__pycache__/
+__pycache__/*
 *.pyc
 
 .env
@@ -10,3 +10,5 @@ env/
 .venv
 venv/
 playground/files/*
+__pycache__/  
+*.pyc  
