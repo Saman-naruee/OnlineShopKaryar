@@ -17,6 +17,9 @@ import os
 from unittest.mock import DEFAULT
 from decouple import config
 from django import conf
+from celery.schedules import crontab
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -232,3 +235,11 @@ to install django requirements:
 '''
 
 CELERY_BROKER_URL = 'redis://localhost:6379/1'
+CELERY_BEAT_SCHEDULE = {
+    'notify_customers': {
+        'task': 'playground.tasks.notify_customers',
+        # 'schedule': crontab(minute='*/1'),  # every 1 minutes
+        'schedule': 5,
+        'args': ('Hello Celery!',)
+    },
+}
