@@ -183,7 +183,7 @@ INTERNAL_IPS = [
     '127.0.0.1'
 ]
 
-DEVELOPER_MODE = False # Must be true just in development you can set it to false
+DEVELOPER_MODE = True # Must be true just in development you can set it to false
 
 if DEVELOPER_MODE:
     REST_FRAMEWORK = {
