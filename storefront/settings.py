@@ -198,8 +198,8 @@ if DEVELOPER_MODE:
     }
 
     SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=999999999),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=999999999),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', cast=int)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=config('REFRESH_TOKEN_LIFETIME', cast=int)),
     'AUTH_HEADER_TYPES': ('JWT',)
     }
 
