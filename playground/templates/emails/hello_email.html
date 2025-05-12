@@ -1,0 +1,116 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior: smooth; background-color: #f5f5f5;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject }}</title>
+    {% block style %}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+        * {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            background-color: #f5f5f5;
+        }
+
+        .inner-container {
+            background-color: #fff;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .message {
+            padding: 20px 0;
+        }
+
+        .message p {
+            margin: 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .footer p {
+            margin: 0;
+        }
+
+        .footer .link {
+            color: #337ab7;
+            text-decoration: none;
+        }
+
+        .footer .link:hover {
+            color: #23527c;
+        }
+
+        .attachment {
+            margin-top: 20px;
+        }
+
+        .attachment a {
+            display: block;
+            padding: 10px;
+            background-color: #337ab7;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .attachment a:hover {
+            background-color: #23527c;
+        }
+    </style>
+    {% endblock %}
+</head>
+
+<body>
+    <div class="container">
+        <div class="inner-container">
+            <div class="header">
+                <h1>{{ subject }}</h1>
+            </div>
+            <div class="message">
+                <p>{{ message }}</p>
+            </div>
+            {% if files %}
+            <div class="attachment">
+                {% for file in files %}
+                <a href="{{ file.url }}" download="{{ file.name }}">{{ file.name }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="footer">
+                <p>Best regards,</p>
+                <p>{{ from_email }}</p>
+                <p><a href="{{ unsubscribe_url }}" class="link">Unsubscribe</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+

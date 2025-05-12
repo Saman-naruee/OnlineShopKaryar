@@ -10,10 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from ctypes import cast
 from pathlib import Path
 from datetime import timedelta
 import os
+from unittest.mock import DEFAULT
 from decouple import config
+from django import conf
+from celery.schedules import crontab
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -50,6 +56,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'djoser',
+    'corsheaders',
 
     # Apps
     'likes',
@@ -60,6 +67,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -75,7 +84,7 @@ ROOT_URLCONF = 'storefront.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'playground/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -94,16 +103,28 @@ WSGI_APPLICATION = 'storefront.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
+SQLITE3 = {  
+    'default': {  
+        'ENGINE': 'django.db.backends.sqlite3',  
+        'NAME': BASE_DIR / 'db.sqlite3',  
+    }  
+}  
+
+POSTGRES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': config('DATABASE'),  
-        'USER': config('USER'),
-        'PASSWORD': config('PASSWORD'),
-        'HOST': config('HOST'), 
-        'PORT': config('PORT'),
+        'NAME': config('DATABASE', cast=str),
+        'USER': config('USER', cast=str),
+        'PASSWORD': config('PASSWORD', cast=str),
+        'HOST': config('HOST', cast=str),
+        'PORT': config('PORT', cast=str),
+        'OPTIONS': {
+            'options': '-c search_path=public'
+        },
     }
 }
+
+DATABASES = SQLITE3
 
 
 # Password validation
@@ -162,9 +183,9 @@ INTERNAL_IPS = [
     '127.0.0.1'
 ]
 
-DEVELOPER_MODE = True
+DEVELOPER_MODE = True # Must be true just in development you can set it to false
 
-if not DEVELOPER_MODE:
+if DEVELOPER_MODE:
     REST_FRAMEWORK = {
         'COERCE_DECIMAL_TO_STRING': False,
         # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -172,13 +193,13 @@ if not DEVELOPER_MODE:
             'rest_framework_simplejwt.authentication.JWTAuthentication',
         ),
         'DEFAULT_PERMISSION_CLASSES': [
-            'rest_framework.permissions.IsAuthenticated', # AllowAny
+            'rest_framework.permissions.IsAuthenticated',
         ]
     }
 
     SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME')),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME')),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', cast=int)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=config('REFRESH_TOKEN_LIFETIME', cast=int)),
     'AUTH_HEADER_TYPES': ('JWT',)
     }
 
@@ -193,3 +214,32 @@ DJOSER = { # uses for user registration and login
 }
 
 AUTH_USER_MODEL = 'core.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = 'Saman3334ksk2$@'
+EMAIL_PORT = 2525
+DEFAULT_FROM_EMAIL = 'narueesaman@gmail.com'
+ADMINS = [
+    ('Naruee Saman', 'narueesaman@gmail.com'),
+    ('Saman', 'samannaruee@gmail')
+]
+CORS_HEADERS_ORIGINS = [
+    # ADD ALLOWED DOMAINS
+]
+
+'''
+to install django requirements:
+    django-filters: 
+'''
+
+CELERY_BROKER_URL = 'redis://localhost:6379/1'
+CELERY_BEAT_SCHEDULE = {
+    'notify_customers': {
+        'task': 'playground.tasks.notify_customers',
+        # 'schedule': crontab(minute='*/1'),  # every 1 minutes
+        'schedule': 5,
+        'args': ('Hello Celery!',)
+    },
+}

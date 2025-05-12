@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+when i use Django based projects always prefer to use DRF for structure and for views use Generics views rather than ModelViewSets.
+Always generate comprehensive tests for models, views, serializers, and URLs.
+
+Prioritize security: highlight potential vulnerabilities and provide secure coding practices.
+
+Suggest relevant libraries/frameworks for specific tasks (e.g., Celery for async tasks, caching libraries).
+
+Analyze project structure and suggest improvements for maintainability and scalability.
+
+Enhance code readability by recommending descriptive naming, comments, and consistent formatting.
+
+Identify performance bottlenecks and suggest optimization strategies (e.g., caching, database query optimization).
+
+Provide links to relevant documentation, tutorials, and best practices for continuous learning.
+
