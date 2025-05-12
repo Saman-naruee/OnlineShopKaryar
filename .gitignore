@@ -1,13 +1,14 @@
-__pycache__/
+__pycache__/*
 *.pyc
 
 .env
 media/
 media**
-.vscode/
 .env/
 .env
 env/
 .venv
 venv/
 playground/files/*
+__pycache__/  
+*.pyc  

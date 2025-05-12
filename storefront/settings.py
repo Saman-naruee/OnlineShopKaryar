@@ -17,6 +17,9 @@ import os
 from unittest.mock import DEFAULT
 from decouple import config
 from django import conf
+from celery.schedules import crontab
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -180,7 +183,7 @@ INTERNAL_IPS = [
     '127.0.0.1'
 ]
 
-DEVELOPER_MODE = False # Must be true just in development you can set it to false
+DEVELOPER_MODE = True # Must be true just in development you can set it to false
 
 if DEVELOPER_MODE:
     REST_FRAMEWORK = {
@@ -195,8 +198,8 @@ if DEVELOPER_MODE:
     }
 
     SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=999999999),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=999999999),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', cast=int)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=config('REFRESH_TOKEN_LIFETIME', cast=int)),
     'AUTH_HEADER_TYPES': ('JWT',)
     }
 
@@ -232,3 +235,11 @@ to install django requirements:
 '''
 
 CELERY_BROKER_URL = 'redis://localhost:6379/1'
+CELERY_BEAT_SCHEDULE = {
+    'notify_customers': {
+        'task': 'playground.tasks.notify_customers',
+        # 'schedule': crontab(minute='*/1'),  # every 1 minutes
+        'schedule': 5,
+        'args': ('Hello Celery!',)
+    },
+}
