@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
 
+
     # Third party apps
     'debug_toolbar',
     'django_filters',
@@ -190,6 +191,7 @@ if DEVELOPER_MODE:
         'COERCE_DECIMAL_TO_STRING': False,
         # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
         'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework.authentication.SessionAuthentication',
             'rest_framework_simplejwt.authentication.JWTAuthentication',
         ),
         'DEFAULT_PERMISSION_CLASSES': [
@@ -212,7 +214,6 @@ DJOSER = { # uses for user registration and login
         'current_user': 'core.serializers.UserDetailSerializer'
     }
 }
-
 AUTH_USER_MODEL = 'core.User'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
