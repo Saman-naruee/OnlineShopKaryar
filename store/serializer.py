@@ -12,7 +12,12 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'products_count'] 
     products_count = serializers.IntegerField(read_only=True)
 
-
+    def validate_title(self, value):
+        if Collection.objects.filter(title=value).exists():
+            raise serializers.ValidationError('Collection with this title already exists!')
+        return value
+    
+    
 class ProductImageSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         product_id = self.context['product_pk']
