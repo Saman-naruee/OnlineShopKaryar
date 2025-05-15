@@ -53,6 +53,11 @@ class CollectionViewSet(ModelViewSet):
     serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
 
+    def create(self, request, *args, **kwargs):
+        if Collection.objects.filter(title=request.data['title']).exists():
+            return Response({'error': 'Collection with this title already exists.'}, status=400)
+        return super().create(request, *args, **kwargs)
+
     def destroy(self, request, *args, **kwargs):
         collection = get_object_or_404(Collection, pk=kwargs['pk'])
         products_count = Product.objects.filter(collection=collection).count() > 0
