@@ -8,6 +8,7 @@ from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey  
 from core.models import User
 from .validators import validate_image_size
+from django.core.exceptions import ValidationError
 # import pillow
 
 
@@ -21,7 +22,7 @@ class Promotion(models.Model):
 
 
 class Collection(MPTTModel):
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, unique=True)
     featured_product = models.ForeignKey(
         'Product', on_delete=models.SET_NULL, null=True, blank=True, related_name='featured_in_collections')
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
@@ -33,8 +34,13 @@ class Collection(MPTTModel):
     def __str__(self) -> str:
         return self.title
 
+    def save(self, *args, **kwargs):
+        if Collection.objects.filter(title=self.title).exists():
+            raise ValidationError('Collection with this title already exists.')
+        super().save(*args, **kwargs)
+
 class Product(models.Model):
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, unique=True)
     slug = models.SlugField()
     description = models.TextField(null=True, blank=True)
     unit_price = models.PositiveBigIntegerField()
@@ -48,6 +54,11 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['title']
+
+    def save(self, *args, **kwargs):
+        if Product.objects.filter(title=self.title).exists():
+            raise ValidationError('Product with this title already exists.')
+        super().save(*args, **kwargs)
 
 class ProductImages(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
@@ -153,6 +164,12 @@ class Review(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     date = models.DateField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # A User can only leave one review for a product.
+        if Review.objects.filter(product_id=self.product_id, user_id=self.user_id).exists():
+            raise ValidationError('A user can only leave one review for a product.')
+        super().save(*args, **kwargs)
 
 
 class Notification(models.Model):
