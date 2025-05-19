@@ -47,7 +47,10 @@ class ProductViewset(ModelViewSet):
 
 class CollectionViewSet(ModelViewSet):
     """
-    A viewset for viewing and editing collection instances.
+    A viewset for performing CRUD operations on Collection instances.
+    Provides endpoints for listing, creating, retrieving, updating, and deleting collections.
+    Includes custom logic for creation to prevent duplicate titles and for deletion
+    to prevent removing collections that still have associated products.
     """
     queryset = Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class = CollectionSerializer
