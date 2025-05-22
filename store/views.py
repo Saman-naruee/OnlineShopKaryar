@@ -180,12 +180,12 @@ class NotificationViewSet(ModelViewSet):
     """
     A viewset for viewing and editing notification instances.
     """
-    queryset = Notification.objects.all()
     serializer_class = UserNotificationsSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
+    def get_queryset(self): 
+        queryset = Notification.objects.filter(user=self.request.user)
+        
         last_received = self.request.query_params.get('LastReceived')
         if last_received:
             last_received = timezone.datetime.fromisoformat(last_received)
