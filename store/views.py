@@ -184,29 +184,13 @@ class NotificationViewSet(ModelViewSet):
     serializer_class = UserNotificationsSerializer
     permission_classes = [AllowAny]
 
-    def list(self, request):
-        last_received = request.query_params.get('LastRecieved')
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        last_received = self.request.query_params.get('LastReceived')
         if last_received:
             last_received = timezone.datetime.fromisoformat(last_received)
-            notifications = Notification.objects.filter(created_at__gt=last_received)
-        else:
-            notifications = Notification.objects.all()
-        serializer = UserNotificationsSerializer(notifications, many=True)
-        return Response(serializer.data)
-    
-    def create(self, request, *args, **kwargs):
-        serializer = UserNotificationsSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def destroy(self, request, *args, **kwargs):
-        id = kwargs.get('pk')
-        notification = get_object_or_404(Notification, pk=id)
-        notification.delete()
-        return Response({"Message":"Notification Deleted."}, status=status.HTTP_204_NO_CONTENT)
-
+            queryset = queryset.filter(created_at__gt=last_received)
+        return queryset
 
 class ProductImageViewSet(ModelViewSet):
     """
