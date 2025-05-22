@@ -93,7 +93,7 @@ class Customer(models.Model):
         return self.user.last_name
     
     def __str__(self) -> str:
-        return f"Mr.{self.user.last_name}"
+        return f"Mr.{self.username}"
     
     class Meta:
         permissions = [
@@ -185,4 +185,4 @@ class Notification(models.Model):
     status = models.CharField(max_length=1, choices=READING_STATUS, default='U')
 
     def __str__(self) -> str:
-        return f'{self.message} - {self.user.username}'
+        return f'{self.message} - {self.user.user.username}'

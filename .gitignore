@@ -12,3 +12,4 @@ venv/
 playground/files/*
 __pycache__/  
 *.pyc  
+.aider.*
