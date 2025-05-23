@@ -1,4 +1,5 @@
 from typing import override
+from django.forms import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -53,6 +54,12 @@ class NotificationModelTest(TestCase):
         expected_string = f'{self.notification.message} - {self.notification.user.user.username}'
         self.assertEqual(str(self.notification), expected_string)
 
+    def tearDown(self):
+        # Clean up test data
+        User.objects.all().delete()
+        Customer.objects.all().delete()
+        Product.objects.all().delete()
+
 
 class ProductModelTest(TestCase):
     """Test the Product model"""
@@ -66,6 +73,7 @@ class ProductModelTest(TestCase):
             title='Test Product',
             description='Test product description',
             unit_price=10.99,
+            inventory=100,
             collection=self.collection
         )
     
@@ -79,6 +87,32 @@ class ProductModelTest(TestCase):
         """Test the string representation of a product"""
         expected_string = self.product.title
         self.assertEqual(str(self.product), expected_string)
+
+    def test_product_with_zero_inventory(self):
+        product = Product.objects.create(
+            title='Zero Inventory Product',
+            description='Test',
+            unit_price=10.99,
+            inventory=0,
+            collection=self.collection
+        )
+        self.assertEqual(product.inventory, 0)
+
+    def test_product_negative_inventory(self):
+        with self.assertRaises(ValidationError):
+            Product.objects.create(
+                title='Invalid Product',
+                description='Test',
+                unit_price=10.99,
+                inventory=-1,
+                collection=self.collection
+            )
+
+    def test_product_inventory_update(self):
+        initial_inventory = self.product.inventory
+        self.product.inventory -= 1
+        self.product.save()
+        self.assertEqual(self.product.inventory, initial_inventory - 1)
 
 
 class CollectionModelTest(TestCase):
@@ -101,8 +135,17 @@ class CartModelTest(TestCase):
     """Test the Cart model"""
     
     def setUp(self):
-        # create a cart
-        self.cart = Cart.objects.create()
+        self.user = User.objects.create_user(
+            username='testuser',
+            password='testpass123',
+            email='testuser@example.com'
+        )
+        self.customer = Customer.objects.create(
+            user=self.user,
+            phone='1234567890',
+            membership='B'
+        )
+        self.cart = Cart.objects.create(customer=self.customer)
     
     def test_cart_creation(self):
         self.assertIsNotNone(self.cart.uid)
@@ -111,6 +154,18 @@ class CartModelTest(TestCase):
         """Test the string representation of a cart"""
         expected_string = str(self.cart.uid)
         self.assertEqual(str(self.cart), expected_string)
+
+    def test_cart_customer_permission(self):
+        other_user = User.objects.create_user(
+            username='otheruser',
+            password='testpass123'
+        )
+        other_customer = Customer.objects.create(
+            user=other_user,
+            phone='9876543210',
+            membership='B'
+        )
+        self.assertNotEqual(self.cart.customer, other_customer)
 
 
 class ReviewModelTest(TestCase):
@@ -136,6 +191,7 @@ class ReviewModelTest(TestCase):
             title='Test Product',
             description='Test product description',
             unit_price=10.99,
+            inventory=100,
             collection=self.collection
         )
         # create a review
