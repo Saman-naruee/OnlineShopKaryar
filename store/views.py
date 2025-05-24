@@ -44,6 +44,16 @@ class ProductViewset(ModelViewSet):
             return Response({'error': 'product can not be deleted, we have related orderitems!'}, 
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super().destroy(request, *args, **kwargs)
+    
+    
+    def update(self, request, *args, **kwargs):
+        data = request.data
+        if 'inventory' in data and data['inventory'] < 0:
+            return Response({'error': 'inventory can not be negative.'}, status=400)
+        if 'unit_price' in data and data['unit_price'] < 0:
+            return Response({'error': 'unit_price can not be negative.'}, status=400)
+        return super().update(request, *args, **kwargs)
+    
 
 class CollectionViewSet(ModelViewSet):
     """
