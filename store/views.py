@@ -82,6 +82,15 @@ class ReviewViewSet(ModelViewSet):
     
     def get_serializer_context(self):
         return {'product_id': self.kwargs['product_pk']}
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            product_id = self.kwargs['product_pk']
+            Review.objects.get(product_id=product_id, user=request.user)
+            return Response({'error': 'You have already left a review for this product.'}, status=400)
+        except Review.DoesNotExist:
+            return super().create(request, *args, **kwargs)
+
 
 class CartViewSet(CreateModelMixin, DestroyModelMixin,
                 RetrieveModelMixin, GenericViewSet, ListModelMixin):

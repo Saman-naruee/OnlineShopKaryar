@@ -1,3 +1,5 @@
+from datetime import date
+from os import name
 from typing import override
 from django.forms import ValidationError
 from django.test import TestCase
@@ -152,7 +154,7 @@ class CartModelTest(TestCase):
 
     def test_cart_string_representation(self):
         """Test the string representation of a cart"""
-        expected_string = str(self.cart.uid)
+        expected_string = str(self.cart.created_at)
         self.assertEqual(str(self.cart), expected_string)
 
     def test_cart_customer_permission(self):
@@ -197,18 +199,16 @@ class ReviewModelTest(TestCase):
         # create a review
         self.review = Review.objects.create(
             product=self.product,
-            customer=self.customer,
-            rating=5,
-            comment='Test review comment'
+            name='Test Review',
+            description='Test review description',
         )
     
     def test_review_creation(self):
         self.assertEqual(self.review.product, self.product)
-        self.assertEqual(self.review.customer, self.customer)
-        self.assertEqual(self.review.rating, 5)
-        self.assertEqual(self.review.comment, 'Test review comment')
+        self.assertEqual(self.review.name, 'Test Review')
+        self.assertEqual(self.review.description, 'Test review description')
 
     def test_review_string_representation(self):
         """Test the string representation of a review"""
-        expected_string = f'{self.review.product.title} - {self.review.customer.user.username}'
+        expected_string = f'{self.review.product.title} - {self.review.name}'
         self.assertEqual(str(self.review), expected_string)
