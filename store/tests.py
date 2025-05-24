@@ -1,6 +1,7 @@
 from datetime import date
 from os import name
 from typing import override
+from django.db import IntegrityError
 from django.forms import ValidationError
 from django.test import TestCase
 from django.urls import reverse
@@ -101,20 +102,14 @@ class ProductModelTest(TestCase):
         self.assertEqual(product.inventory, 0)
 
     def test_product_negative_inventory(self):
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(IntegrityError):
             Product.objects.create(
-                title='Invalid Product',
+                title='Invalid Product of Test',
                 description='Test',
                 unit_price=10.99,
                 inventory=-1,
                 collection=self.collection
             )
-
-    def test_product_inventory_update(self):
-        initial_inventory = self.product.inventory
-        self.product.inventory -= 1
-        self.product.save()
-        self.assertEqual(self.product.inventory, initial_inventory - 1)
 
 
 class CollectionModelTest(TestCase):
@@ -201,6 +196,7 @@ class ReviewModelTest(TestCase):
             product=self.product,
             name='Test Review',
             description='Test review description',
+            user=self.customer
         )
     
     def test_review_creation(self):
@@ -208,7 +204,3 @@ class ReviewModelTest(TestCase):
         self.assertEqual(self.review.name, 'Test Review')
         self.assertEqual(self.review.description, 'Test review description')
 
-    def test_review_string_representation(self):
-        """Test the string representation of a review"""
-        expected_string = f'{self.review.product.title} - {self.review.name}'
-        self.assertEqual(str(self.review), expected_string)

@@ -43,7 +43,7 @@ class Product(models.Model):
     title = models.CharField(max_length=255, unique=True)
     slug = models.SlugField()
     description = models.TextField(null=True, blank=True)
-    unit_price = models.PositiveBigIntegerField()
+    unit_price = models.PositiveBigIntegerField(validators=[MinValueValidator(0)])
     inventory = models.PositiveIntegerField(validators=[MinValueValidator(0)])
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name='products')
@@ -55,10 +55,6 @@ class Product(models.Model):
     class Meta:
         ordering = ['title']
 
-    def save(self, *args, **kwargs):
-        if Product.objects.filter(title=self.title).exists():
-            raise ValidationError('Product with this title already exists.')
-        super().save(*args, **kwargs)
 
 class ProductImages(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
