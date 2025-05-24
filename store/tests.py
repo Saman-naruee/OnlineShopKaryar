@@ -10,7 +10,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 from .models import Notification, Product, Collection, OrderItem, Review, Cart, \
-    CartItem, Customer, Order, ProductImages
+    CartItem, Customer, Order, ProductImages, Promotion
 from .serializer import ProductSerializer,\
     CollectionSerializer, ReviewSerializer, CartSerializer,\
     CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer,\
@@ -204,3 +204,23 @@ class ReviewModelTest(TestCase):
         self.assertEqual(self.review.name, 'Test Review')
         self.assertEqual(self.review.description, 'Test review description')
 
+
+class CustomerModelTest(TestCase):
+    """Test the Customer model"""
+    
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='testuser',
+            password='testpass123',
+            email='testuser@example.com'
+        )
+        self.customer = Customer.objects.create(
+            user=self.user,
+            phone='1234567890',
+            membership='B'
+        )
+    
+    def test_customer_creation(self):
+        self.assertEqual(self.customer.user, self.user)
+        self.assertEqual(self.customer.phone, '1234567890')
+        self.assertEqual(self.customer.membership, 'B')
