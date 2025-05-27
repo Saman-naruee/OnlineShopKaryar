@@ -223,7 +223,7 @@ class UserAuthenticationTest(TestCase):
         user = User.objects.get(username=self.user_data['username'])
         self.assertEqual(user.email, self.user_data['email'])
 
-    def test_token_refresh(self):
+    def test_token_refresh(self): 
         """Test refreshing access token"""
         # First register and login
         self.client.post(self.register_url, self.user_data)
