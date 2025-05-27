@@ -20,6 +20,7 @@ import json
 
 User = get_user_model()
 
+### Models tests ###
 
 class NotificationModelTest(TestCase):
     """Test the Notification model"""
@@ -224,3 +225,78 @@ class CustomerModelTest(TestCase):
         self.assertEqual(self.customer.user, self.user)
         self.assertEqual(self.customer.phone, '1234567890')
         self.assertEqual(self.customer.membership, 'B')
+
+
+
+### Views tests ###
+
+
+# COLLECTION API TESTS:
+
+class CollectionAPITest(TestCase):
+    """Test the Collection API"""
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser', password='testpass123', email='testuser@gmail.com')
+        self.admin_user = User.objects.create_superuser(username='admin', password='adminpass123', email='admintest@gmail.com')
+        self.collection = Collection.objects.create(title='Test Collection')
+        self.url = reverse('collection-list')
+
+    def test_list_collections(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_create_collection_unauthenticated(self):
+        data = {'title': 'New Collection'}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_collection_authenticated_non_admin(self):
+        self.client.force_authenticate(user=self.user)
+        data = {'title': 'New Collection'}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_collection_admin(self):
+        self.client.force_authenticate(user=self.admin_user)
+        data = {'title': 'New Collection'}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Collection.objects.count(), 2)
+
+    def test_create_collection_invalid_data(self):
+        self.client.force_authenticate(user=self.admin_user)
+        data = {'title': ''}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_retrieve_collection(self):
+        url = reverse('collection-detail', args=[self.collection.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['title'], 'Test Collection')
+
+    def test_update_collection(self):
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('collection-detail', args=[self.collection.id])
+        data = {'title': 'Updated Collection'}
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.title, 'Updated Collection')
+
+    def test_delete_collection(self):
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('collection-detail', args=[self.collection.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Collection.objects.count(), 0)
+
+    def test_delete_collection_with_products(self):
+        Product.objects.create(title='Test Product', unit_price=10, inventory=10, collection=self.collection)
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('collection-detail', args=[self.collection.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(Collection.objects.count(), 1)

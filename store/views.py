@@ -76,7 +76,7 @@ class CollectionViewSet(ModelViewSet):
         products_count = Product.objects.filter(collection=collection).count() > 0
         if products_count:
             return Response({'error':'can not delete because there is products associated with this collection'},
-                        status=status.HTTP_403_FORBIDDEN
+                        status=status.HTTP_405_METHOD_NOT_ALLOWED
                         )
         return super().destroy(request, *args, **kwargs)
 
