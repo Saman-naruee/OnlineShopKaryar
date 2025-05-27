@@ -15,7 +15,7 @@ class RegisterView(generics.CreateAPIView):
     A view for registering new users.
     """
     queryset = User.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
     serializer_class = UserCreateSerializer
 
 
