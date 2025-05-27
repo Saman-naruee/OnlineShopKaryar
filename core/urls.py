@@ -9,5 +9,5 @@ urlpatterns = [
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # User profile endpoints
-    path('users/me/', views.UserProfileView.as_view(), name='user-profile'),
+    path('users/profile/', views.UserProfileView.as_view(), name='user-profile')
 ]

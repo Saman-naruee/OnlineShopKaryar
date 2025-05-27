@@ -1,22 +1,18 @@
-from djoser import serializers
-from djoser.serializers import UserSerializer, UserCreateSerializer as BaseUserCreateSerializer
+from rest_framework import serializers
+from djoser.serializers import UserSerializer as BaseUserSerializer
+from django.contrib.auth import get_user_model
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
-# class UserCreateSerializer(BaseUserCreateSerializer):
 
-#     class Meta(BaseUserCreateSerializer.Meta):
-#         fields = [
-#             'id', 'username', 'password', 'email', 'first_name', 'last_name'
-#         ]
-
-
-class UserDetailSerializer(UserSerializer): # we have to modify it in settings.DJOSER settings.
+class UserDetailSerializer(BaseUserSerializer): 
     """ 
         Custom Serializer: 
         Uses for show details like username and password and extra fields like first and last name as well
     """
-    class Meta(UserSerializer.Meta):
+    class Meta(BaseUserSerializer.Meta):
         fields = [
             'id', 'username', 'password', 'email', 'first_name', 'last_name'
         ]
