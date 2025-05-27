@@ -38,6 +38,6 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         if 'email' in request.data and request.data['email'] != instance.email:
             return Response({'error': 'Email cannot be changed.'}, status=status.HTTP_400_BAD_REQUEST)
         
-        self.perform_update(serializer)
+        serializer.save()
         return Response(serializer.data)
 
