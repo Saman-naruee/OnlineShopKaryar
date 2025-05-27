@@ -298,5 +298,6 @@ class CollectionAPITest(TestCase):
         self.client.force_authenticate(user=self.admin_user)
         url = reverse('collection-detail', args=[self.collection.id])
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(Collection.objects.count(), 1)
+        self.assertEqual(response.data['error'], 'Cannot delete collection with associated products')
