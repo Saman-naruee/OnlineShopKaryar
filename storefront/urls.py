@@ -46,6 +46,8 @@ urlpatterns = [
     path('auth/', include('djoser.urls')),    
     path('auth/', include('djoser.urls.jwt')),
     path('core/', include('core.urls')),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # Django debug toolbar
     path('__debug__/', include(debug_toolbar.urls)),
 

@@ -191,7 +191,7 @@ if DEVELOPER_MODE:
         'COERCE_DECIMAL_TO_STRING': False,
         # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
         'DEFAULT_AUTHENTICATION_CLASSES': (
-            # 'rest_framework.authentication.SessionAuthentication',
+            'rest_framework.authentication.SessionAuthentication',
             'rest_framework_simplejwt.authentication.JWTAuthentication',
         ),
         'DEFAULT_PERMISSION_CLASSES': [
@@ -202,7 +202,7 @@ if DEVELOPER_MODE:
     SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', cast=int)),
     'REFRESH_TOKEN_LIFETIME': timedelta(minutes=config('REFRESH_TOKEN_LIFETIME', cast=int)),
-    'AUTH_HEADER_TYPES': ('JWT',)
+    'AUTH_HEADER_TYPES': ('Bearer',)
     }
 
 

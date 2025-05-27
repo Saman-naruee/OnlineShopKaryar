@@ -1,7 +1,4 @@
-from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
-from rest_framework import serializers
+from djoser import serializers
 from djoser.serializers import UserSerializer, UserCreateSerializer as BaseUserCreateSerializer
 
 User = get_user_model()
