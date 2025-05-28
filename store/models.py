@@ -176,10 +176,10 @@ class Notification(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    is_admin = models.BooleanField(default=False) # if user is admin
+    is_admin = models.BooleanField(default=False) # if user is not admin
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=1, choices=READING_STATUS, default='U')
 
     def __str__(self) -> str:
-        return f'{self.message} - {self.user.user.username}'
+        return f'{self.message} - {self.user.username}'

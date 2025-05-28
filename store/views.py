@@ -2,6 +2,8 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+
+from core.models import User
 from .permissions import IsAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission, NotificationsPermission
 from rest_framework import status, serializers
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, IsAdminUser, AllowAny
@@ -21,6 +23,9 @@ from .serializer import ProductSerializer,\
 from .filters import ProductFilter
 from .pagination import DefaultPagination
 from rest_framework.viewsets import ModelViewSet
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class ProductViewset(ModelViewSet):
@@ -214,7 +219,7 @@ class NotificationViewSet(ModelViewSet):
         - optionally filter by last received timestamp.
         """
         if self.request.user.is_staff:
-            return Notification.objects.all()
+            queryset = Notification.objects.all()
         else:
             queryset = Notification.objects.filter(user=self.request.user)
         
@@ -222,10 +227,21 @@ class NotificationViewSet(ModelViewSet):
         if last_received:
             last_received = timezone.datetime.fromisoformat(last_received)
             queryset = queryset.filter(created_at__gt=last_received)
+            
         return queryset.order_by('-created_at')
     
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        """
+        When creating a notification:
+        - Admin users can create notifications for any user.
+        - The target user is specified in the request data.
+        """
+        user_id = self.request.data.get('user')
+        if user_id:
+            user = User.objects.get(id=user_id)
+            serializer.save(user=user)
+        else:
+            serializer.save(user=self.request.user)
 
 class ProductImageViewSet(ModelViewSet):
     """

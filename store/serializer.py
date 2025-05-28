@@ -189,7 +189,7 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ['id', 'user', 'message', 'created_at', 'status', 'is_admin']
-        read_only_fields = ['id', 'created_at', 'user', 'is_admin']
+        read_only_fields = ['id', 'created_at', 'is_admin']
 
 
     def validate(self, attrs):
@@ -203,10 +203,12 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
         if not request or not request.user:
             raise serializers.ValidationError('Authentication is required!')
         
-        if not request.uesr.is_staff:
+        if not request.user.is_staff:
             raise serializers.ValidationError("Only staff users can create and update notifications for any user.")
         
         if not attrs.get('user'):
             raise serializers.ValidationError("Target user must be specified.")
+        
+        return attrs
     
 

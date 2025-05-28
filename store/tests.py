@@ -301,3 +301,129 @@ class CollectionAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(Collection.objects.count(), 1)
         self.assertEqual(response.data['error'], 'Cannot delete collection with associated products')
+
+
+class NotificationTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        
+        # Create admin user
+        self.admin_user = User.objects.create_user(
+            username='admin',
+            password='admin123',
+            email='admin@example.com',
+            is_staff=True
+        )
+        
+        # Create regular users
+        self.user1 = User.objects.create_user(
+            username='user1',
+            password='user123',
+            email='user1@example.com'
+        )
+        self.user2 = User.objects.create_user(
+            username='user2',
+            password='user123',
+            email='user2@example.com'
+        )
+        
+        # Create some test notifications
+        self.notification1 = Notification.objects.create(
+            user=self.user1,
+            message='Test notification 1',
+            is_admin=True
+        )
+        self.notification2 = Notification.objects.create(
+            user=self.user2,
+            message='Test notification 2',
+            is_admin=True
+        )
+        
+        self.notifications_url = '/api/notifications/'
+    
+    def test_admin_can_create_notification(self):
+        """Test that admin can create notifications for users"""
+        self.client.force_authenticate(user=self.admin_user)
+        
+        response = self.client.post(self.notifications_url, {
+            'user': self.user1.id,
+            'message': 'New notification',
+            'is_admin': True
+        })
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Notification.objects.count(), 3)
+        
+    def test_regular_user_cannot_create_notification(self):
+        """Test that regular users cannot create notifications"""
+        self.client.force_authenticate(user=self.user1)
+        
+        response = self.client.post(self.notifications_url, {
+            'user': self.user2.id,
+            'message': 'New notification',
+            'is_admin': True
+        })
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Notification.objects.count(), 2)
+        
+    def test_user_can_only_see_own_notifications(self):
+        """Test that users can only see their own notifications"""
+        self.client.force_authenticate(user=self.user1)
+        
+        response = self.client.get(self.notifications_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['message'], 'Test notification 1')
+        
+    def test_admin_can_see_all_notifications(self):
+        """Test that admin can see all notifications"""
+        self.client.force_authenticate(user=self.admin_user)
+        
+        response = self.client.get(self.notifications_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        
+    def test_user_cannot_modify_notifications(self):
+        """Test that regular users cannot modify notifications"""
+        self.client.force_authenticate(user=self.user1)
+        
+        response = self.client.patch(f'{self.notifications_url}{self.notification1.id}/', {
+            'message': 'Modified message'
+        })
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+    def test_admin_can_modify_notifications(self):
+        """Test that admin can modify notifications"""
+        self.client.force_authenticate(user=self.admin_user)
+        
+        response = self.client.patch(f'{self.notifications_url}{self.notification1.id}/', {
+            'message': 'Modified message'
+        })
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.notification1.refresh_from_db()
+        self.assertEqual(self.notification1.message, 'Modified message')
+        
+    def test_filter_by_last_received(self):
+        """Test filtering notifications by last received timestamp"""
+        self.client.force_authenticate(user=self.user1)
+        
+        # Create a new notification with current timestamp
+        new_notification = Notification.objects.create(
+            user=self.user1,
+            message='New notification',
+            is_admin=True
+        )
+        
+        # Get notifications after the first one's timestamp
+        response = self.client.get(
+            f'{self.notifications_url}?LastReceived={self.notification1.created_at.isoformat()}'
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['message'], 'New notification')

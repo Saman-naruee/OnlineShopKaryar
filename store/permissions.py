@@ -30,12 +30,12 @@ class NotificationsPermission(permissions.BasePermission):
             return bool(request.user and request.user.is_authenticated)
     
         # Only admin can create notifications
-        return bool(request.user and request.user.is_staff)
+        return bool(request.user and request.user.is_staff and request.user.is_authenticated)
     
     def has_object_permission(self, request, view, obj):
         # Check if the user is trying to view their own notification
         if request.method in permissions.SAFE_METHODS:
-            return obj.user == request.user
+            return obj.user == request.user and request.user.is_authenticated
         
         # Only admin can update and delete notifications
-        return bool(request.user and request.user.is_staff)
+        return bool(request.user and request.user.is_staff and request.user.is_authenticated)
