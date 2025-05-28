@@ -44,6 +44,7 @@ urlpatterns = [
     path('playground/', include('playground.urls')),
     path('store/', include('store.urls')),
     path('api/', include('core.urls')),
+    path('core/', include('core.urls')),
     # Django debug toolbar
     path('__debug__/', include(debug_toolbar.urls)),
 

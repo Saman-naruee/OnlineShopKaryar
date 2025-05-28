@@ -25,7 +25,7 @@ from .pagination import DefaultPagination
 from rest_framework.viewsets import ModelViewSet
 from django.contrib.auth import get_user_model
 
-User = get_user_model()
+# User = get_user_model()
 
 
 class ProductViewset(ModelViewSet):
@@ -218,6 +218,7 @@ class NotificationViewSet(ModelViewSet):
         - regular users can only see their own notifications
         - optionally filter by last received timestamp.
         """
+        
         if self.request.user.is_staff:
             queryset = Notification.objects.all()
         else:
@@ -233,14 +234,23 @@ class NotificationViewSet(ModelViewSet):
     def perform_create(self, serializer):
         """
         When creating a notification:
-        - Admin users can create notifications for any user.
-        - The target user is specified in the request data.
+        - Admin users can create notifications for any user
+        - The target user is specified in the request data
         """
-        user_id = self.request.data.get('user')
-        if user_id:
-            user = User.objects.get(id=user_id)
-            serializer.save(user=user)
+        if self.request.user.is_staff:
+            # Get the target user from the request data
+            user_id = self.request.data.get('user')
+            if user_id:
+                try:
+                    from core.models import User
+                    user = User.objects.get(id=user_id)
+                    serializer.save(user=user)
+                except User.DoesNotExist:
+                    raise serializers.ValidationError({"user": "User with this ID does not exist."})
+            else:
+                raise serializers.ValidationError({"user": "Target user must be specified."})
         else:
+            # Regular users can only create notifications for themselves
             serializer.save(user=self.request.user)
 
 class ProductImageViewSet(ModelViewSet):
