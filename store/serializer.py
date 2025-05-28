@@ -1,4 +1,5 @@
 from operator import truediv
+from typing import override
 from django.db import transaction
 from rest_framework import serializers
 from decimal import Decimal
@@ -180,7 +181,32 @@ class CreateOrderSerializer(serializers.Serializer):
         return order
 
 class UserNotificationsSerializer(serializers.ModelSerializer):
+    """
+    Serializer for notification instances.
+    - Staff users can create and update notifications for any user.
+    - Regular users can only view their own notifications.
+    """
     class Meta:
         model = Notification
-        fields = '__all__'
+        fields = ['id', 'user', 'message', 'created_at', 'status', 'is_admin']
+        read_only_fields = ['id', 'created_at', 'user', 'is_admin']
+
+
+    def validate(self, attrs):
+        """
+        validate notifications creation:
+        - Staff users can create and update notifications for any user.
+        - Regular users can only view their own notifications.
+        - Staff must specify target user.
+        """
+        request = self.context.get('request')
+        if not request or not request.user:
+            raise serializers.ValidationError('Authentication is required!')
+        
+        if not request.uesr.is_staff:
+            raise serializers.ValidationError("Only staff users can create and update notifications for any user.")
+        
+        if not attrs.get('user'):
+            raise serializers.ValidationError("Target user must be specified.")
+    
 

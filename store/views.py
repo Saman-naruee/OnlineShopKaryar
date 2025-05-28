@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from .permissions import IsAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission
+from .permissions import IsAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission, NotificationsPermission
 from rest_framework import status, serializers
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, IsAdminUser, AllowAny
 from rest_framework.decorators import action, api_view
@@ -197,19 +197,35 @@ class OrderViewSet(ModelViewSet):
 
 class NotificationViewSet(ModelViewSet):
     """
-    A viewset for viewing and editing notification instances.
+    A viewset for managing notifications.
+
+    Only staff users can create, update, or delete notifications.
+    Regular users can only read their own notifications.
+    Supports filtering by last received timestamp.
     """
     serializer_class = UserNotificationsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, NotificationsPermission]
 
     def get_queryset(self): 
-        queryset = Notification.objects.filter(user=self.request.user)
+        """
+        Filter notifications:
+        - staff users can see all notification blong to all users
+        - regular users can only see their own notifications
+        - optionally filter by last received timestamp.
+        """
+        if self.request.user.is_staff:
+            return Notification.objects.all()
+        else:
+            queryset = Notification.objects.filter(user=self.request.user)
         
         last_received = self.request.query_params.get('LastReceived')
         if last_received:
             last_received = timezone.datetime.fromisoformat(last_received)
             queryset = queryset.filter(created_at__gt=last_received)
-        return queryset
+        return queryset.order_by('-created_at')
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class ProductImageViewSet(ModelViewSet):
     """
