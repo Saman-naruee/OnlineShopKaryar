@@ -300,7 +300,7 @@ class CollectionAPITest(TestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(Collection.objects.count(), 1)
-        self.assertEqual(response.data['error'], 'Cannot delete collection with associated products')
+        self.assertEqual(response.data['error'], 'can not delete because there is products associated with this collection')
 
 
 class NotificationTests(TestCase):
@@ -339,7 +339,7 @@ class NotificationTests(TestCase):
             is_admin=True
         )
         
-        self.notifications_url = '/api/notifications/'
+        self.notifications_url = '/store/notifications/'
     
     def test_admin_can_create_notification(self):
         """Test that admin can create notifications for users"""
