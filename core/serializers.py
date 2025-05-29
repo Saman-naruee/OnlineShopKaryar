@@ -3,6 +3,9 @@ from djoser.serializers import UserSerializer as BaseUserSerializer
 from django.contrib.auth import get_user_model
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.contrib.auth.password_validation import validate_password
+
+
 
 User = get_user_model()
 
@@ -51,10 +54,39 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return value
     
     def validate(self, data):
+        # Check if passwords match
         if data['password'] != data['password2']:
             raise serializers.ValidationError('Passwords do not match.')
+            
+        # Custom password validations
+        password = data['password']
+        username = data['username']
+        
+        # Check if password contains username
+        if username.lower() in password.lower():
+            raise serializers.ValidationError({'password': ['Password cannot contain username.']})
+            
+        # Check password length
+        if len(password) < 8:
+            raise serializers.ValidationError({'password': ['Password must be at least 8 characters long.']})
+            
+        # Check if password is only numeric
+        if password.isdigit():
+            raise serializers.ValidationError({'password': ['Password cannot be entirely numeric.']})
+            
+        # Check if password is only alphabetic
+        if password.isalpha():
+            raise serializers.ValidationError({'password': ['Password must contain at least one number or special character.']})
+        
+        # Validate password strength using Django's password validators
+        try:
+            # This will validate against all validators in settings.AUTH_PASSWORD_VALIDATORS
+            validate_password(password)
+        except ValidationError as e:
+            raise serializers.ValidationError({'password': list(e.messages)})
+            
         return data
-    
+
     def create(self, validated_data):
         validated_data.pop('password2')
         password = validated_data.pop('password')
