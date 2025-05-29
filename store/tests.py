@@ -47,7 +47,7 @@ class NotificationModelTest(TestCase):
 
         # create a notification
         self.notification = Notification.objects.create(
-            user=self.customer,
+            user=self.customer.user,
             message='Test notification',
             is_admin=False,
             status='U' # Unread
@@ -57,11 +57,11 @@ class NotificationModelTest(TestCase):
         self.assertEqual(self.notification.message, 'Test notification')
         self.assertEqual(self.notification.is_admin, False)
         self.assertEqual(self.notification.status, 'U')
-        self.assertEqual(self.notification.user, self.customer)
+        self.assertEqual(self.notification.user, self.customer.user)
 
     def test_notification_string_representation(self):
         """Test the string representation of a notification"""
-        expected_string = f'{self.notification.message} - {self.notification.user.user.username}'
+        expected_string = f'{self.notification.message} - {self.notification.user.username}'
         self.assertEqual(str(self.notification), expected_string)
 
     def tearDown(self):

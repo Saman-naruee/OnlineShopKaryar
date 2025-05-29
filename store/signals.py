@@ -16,7 +16,7 @@ def cart_created(sender, instance, created, **kwargs):
     """
     if created:
         Notification.objects.create(
-            user=instance.customer,
+            user=instance.customer.user,
             message=f'Your cart has been created: {instance.uid}',
             is_admin=False
         )
@@ -40,7 +40,7 @@ def cart_item_changed(sender, instance, created, **kwargs):
         message = f'Quantity of product {product.title} has been changed to {instance.quantity}. '
     
     Notification.objects.create(
-        user=cart.customer,
+        user=cart.customer.user,
         message=message,
         is_admin=False
     )
@@ -55,7 +55,7 @@ def cart_item_removed(sender, instance, **kwargs):
         message = f'Product {product.title} has been removed from your cart.'
         
         Notification.objects.create(
-            user=cart.customer,
+            user=cart.customer.user,
             message=message,
             is_admin=False
         )
@@ -69,19 +69,19 @@ def order_status_changed(sender, instance, created, **kwargs):
     if instance.pk and created:
         if instance.payment_status == Order.PAYMENT_STATUS_COMPLETE:
             Notification.objects.create(
-                user=instance.customer,
+                user=instance.customer.user,
                 message=f'Your order {instance.pk} has been paid.',
                 is_admin=False
             )
         elif instance.payment_status == Order.PAYMENT_STATUS_FAILED:
             Notification.objects.create(
-                user=instance.customer,
+                user=instance.customer.user,
                 message=f'Your order {instance.pk} has failed.',
                 is_admin=False
             )
         elif instance.payment_status == Order.PAYMENT_STATUS_PENDING:
             Notification.objects.create(
-                user=instance.customer,
+                user=instance.customer.user,
                 message=f'Your order {instance.pk} is pending.',
                 is_admin=False
             )
@@ -94,7 +94,7 @@ def order_status_changed(sender, instance, created, **kwargs):
         message = f"Your order #{instance.pk} has been updated to {instance.get_payment_status_display()}."
     
     Notification.objects.create(
-        user=customer,
+        user=customer.user,
         message=message,
         is_admin=True # This is from admin/sytem notifications
     )
@@ -106,7 +106,7 @@ def order_item_added(sender, instance, created, **kwargs):
         product = instance.product
         message = f'Product {product.title} has been added to your order.'
         Notification.objects.create(
-            user=order.customer,
+            user=order.customer.user,
             message=message,
             is_admin=True
         )

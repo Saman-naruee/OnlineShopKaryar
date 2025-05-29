@@ -89,7 +89,7 @@ class Customer(models.Model):
         return self.user.last_name
     
     def __str__(self) -> str:
-        return f"Mr.{self.username}"
+        return f"Mr.{self.user.username}"
     
     class Meta:
         permissions = [
