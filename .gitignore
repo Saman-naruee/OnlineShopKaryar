@@ -13,3 +13,4 @@ playground/files/*
 __pycache__/  
 *.pyc  
 .aider.*
+terminal.txt
