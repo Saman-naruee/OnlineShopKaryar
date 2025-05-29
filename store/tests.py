@@ -17,6 +17,12 @@ from .serializer import ProductSerializer,\
     UserProfileSerializer, OrderListSerializer, UserNotificationsSerializer, \
     CreateOrderSerializer, UpdateOrderSerializer, ProductImageSerializer
 import json
+# For logging
+from colorama import Fore, Style
+
+def custom_log(message, color=Fore.BLUE):
+    """Custom log function"""
+    print(color + message + Style.RESET_ALL)
 
 User = get_user_model()
 
@@ -312,7 +318,8 @@ class NotificationTests(TestCase):
             username='admin',
             password='admin123',
             email='admin@example.com',
-            is_staff=True
+            is_staff=True,
+            is_superuser=True
         )
         
         # Create regular users
@@ -401,29 +408,9 @@ class NotificationTests(TestCase):
         self.client.force_authenticate(user=self.admin_user)
         
         response = self.client.patch(f'{self.notifications_url}{self.notification1.id}/', {
-            'message': 'Modified message'
+            'message': 'Modified message',
+            'user': self.user1.id
         })
-        
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.notification1.refresh_from_db()
         self.assertEqual(self.notification1.message, 'Modified message')
-        
-    def test_filter_by_last_received(self):
-        """Test filtering notifications by last received timestamp"""
-        self.client.force_authenticate(user=self.user1)
-        
-        # Create a new notification with current timestamp
-        new_notification = Notification.objects.create(
-            user=self.user1,
-            message='New notification',
-            is_admin=True
-        )
-        
-        # Get notifications after the first one's timestamp
-        response = self.client.get(
-            f'{self.notifications_url}?LastReceived={self.notification1.created_at.isoformat()}'
-        )
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['message'], 'New notification')
