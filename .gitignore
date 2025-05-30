@@ -14,3 +14,4 @@ __pycache__/
 *.pyc  
 .aider.*
 terminal.txt
+aider_chat_history.txt
