@@ -4,7 +4,7 @@
     "-s",
     ".",
     "-p",
-    "test_*.py"
+    "tests.py"
   ],
   "terminal.integrated.defaultProfile.windows": "Ubuntu-22.04 (WSL)",
   "python.testing.unittestEnabled": true,
