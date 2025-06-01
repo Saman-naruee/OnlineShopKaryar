@@ -14,7 +14,7 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'products_count', 'products_link' ] #
     
     products_count = serializers.IntegerField(read_only=True)
-    products_link = serializers.SerializerMethodField()
+    products_link = serializers.SerializerMethodField(method_name='get_products_link')
 
     def get_products_link(self, obj):
         request = self.context.get('request')
@@ -40,7 +40,8 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id', 'slug', 'title', 'description', 'unit_price',
-            'inventory', 'price_with_tax', 'collection', 'images'
+            'inventory', 'price_with_tax', 'collection', 'images', 'collection_title', 
+            'collection_id'
             ] # we can keep other non-existing fields down the bottom like before.
         
     collection = serializers.HyperlinkedRelatedField(
@@ -48,7 +49,16 @@ class ProductSerializer(serializers.ModelSerializer):
         view_name='collection-detail',
         lookup_field='pk'
     )
+    collection_title = serializers.SerializerMethodField(method_name='get_collection_title')
     price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')
+    collection_id = serializers.SerializerMethodField(method_name='get_collection_id')
+
+    def get_collection_title(self, product: Product):
+        return product.collection.title
+
+    def get_collection_id(self, product: Product):
+        return product.collection.id
+
     def calculate_tax(self, product: Product):
         return product.unit_price * Decimal(1.09)   # .quantize(Decimal('0.01'))
     
