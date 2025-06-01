@@ -7,8 +7,7 @@ from decimal import Decimal
 from .models import Product, Collection , Review, Cart, CartItem, \
       Customer, Order, OrderItem, Notification, ProductImages
 from core.models import User
-import json
-
+from django.utils.text import slugify
 
 class CollectionSerializer(serializers.ModelSerializer):  
     class Meta:  
@@ -69,6 +68,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def calculate_tax(self, product: Product):
         return product.unit_price * Decimal(1.09)   # .quantize(Decimal('0.01'))
+
+    def validate(self, attrs):
+        if attrs['slug'] == '':
+            attrs['slug'] = slugify(attrs['title'])
+        return attrs
     
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
