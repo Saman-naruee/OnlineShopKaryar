@@ -41,7 +41,7 @@ class Collection(MPTTModel):
 
 class Product(models.Model):
     title = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField()
+    slug = models.SlugField(blank=True, null=True)
     description = models.TextField(null=True, blank=True)
     unit_price = models.PositiveBigIntegerField(validators=[MinValueValidator(0)])
     inventory = models.PositiveIntegerField(validators=[MinValueValidator(0)])
