@@ -7,6 +7,8 @@ from decimal import Decimal
 from .models import Product, Collection , Review, Cart, CartItem, \
       Customer, Order, OrderItem, Notification, ProductImages
 from core.models import User
+import json
+
 
 class CollectionSerializer(serializers.ModelSerializer):  
     class Meta:  
@@ -41,7 +43,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'slug', 'title', 'description', 'unit_price',
             'inventory', 'price_with_tax', 'collection', 'images', 'collection_title', 
-            'collection_id'
+            'collection_id',#  'collection_dict'
             ] # we can keep other non-existing fields down the bottom like before.
         
     collection = serializers.HyperlinkedRelatedField(
@@ -52,6 +54,12 @@ class ProductSerializer(serializers.ModelSerializer):
     collection_title = serializers.SerializerMethodField(method_name='get_collection_title')
     price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')
     collection_id = serializers.SerializerMethodField(method_name='get_collection_id')
+    # collection_dict = serializers.SerializerMethodField(method_name='get_collection_dict')
+
+    # def get_collection_dict(self, product: Product):
+    #     data = product.collection.__dict__
+    #     data.pop('_state')
+    #     return data
 
     def get_collection_title(self, product: Product):
         return product.collection.title
