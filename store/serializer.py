@@ -221,8 +221,14 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Notification
-        fields = ['id', 'user', 'message', 'created_at', 'is_admin']
-        read_only_fields = ['id', 'created_at', 'is_admin']
+        fields = ['id', 'user', 'message', 'created_at', 'is_admin', 'user_username']
+        read_only_fields = ['id', 'created_at', 'is_admin', 'user_username', 'user']
+
+    
+    user_username = serializers.SerializerMethodField(method_name='get_user_username')
+
+    def get_user_username(self, notification: Notification):
+        return notification.user.username
 
 
     def validate(self, attrs):
@@ -231,10 +237,14 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
         - Staff users can create and update notifications for any user.
         - Regular users can only view their own notifications.
         - Staff must specify target user.
+        - User cannot be changed once notification is created.
         """
         request = self.context.get('request')
         if not request or not request.user:
             raise serializers.ValidationError('Authentication is required!')
+        
+        if self.instance and 'user' in attrs:
+            raise serializers.ValidationError("User cannot be changed once notification is created.")
         
         if not request.user.is_staff:
             raise serializers.ValidationError("Only staff users can create and update notifications for any user.")
