@@ -12,14 +12,15 @@ from django.utils.text import slugify
 class CollectionSerializer(serializers.ModelSerializer):  
     class Meta:  
         model = Collection  
-        fields = ['id', 'title', 'products_count', 'products_link' ] #
+        fields = ['id', 'title', 'products_count', 'products_link' ]
     
     products_count = serializers.IntegerField(read_only=True)
     products_link = serializers.SerializerMethodField(method_name='get_products_link')
 
     def get_products_link(self, obj):
         request = self.context.get('request')
-        return reverse('products-list', request=request) + f'?collection_id={obj.id}'
+        url = reverse('products-list', request=request)
+        return f'{url}?collection_id={obj.id}'
     
     def validate_title(self, value):
         if Collection.objects.filter(title=value).exists():
