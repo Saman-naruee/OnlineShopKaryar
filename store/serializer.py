@@ -43,38 +43,38 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'slug', 'title', 'description', 'unit_price',
             'inventory', 'price_with_tax', 'collection', 'images', 'collection_title', 
-            'collection_id',#  'collection_dict'
+            'collection_id',
             ] # we can keep other non-existing fields down the bottom like before.
         
     collection = serializers.HyperlinkedRelatedField(
         queryset=Collection.objects.all(),
         view_name='collection-detail',
-        lookup_field='pk'
+        lookup_field='pk',
+        required=False, # for display
     )
+
     collection_title = serializers.SerializerMethodField(method_name='get_collection_title')
     price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')
-    collection_id = serializers.SerializerMethodField(method_name='get_collection_id')
-    # collection_dict = serializers.SerializerMethodField(method_name='get_collection_dict')
-
-    # def get_collection_dict(self, product: Product):
-    #     data = product.collection.__dict__
-    #     data.pop('_state')
-    #     return data
+    collection_id = serializers.IntegerField(write_only=True)
 
     def get_collection_title(self, product: Product):
         return product.collection.title
-
-    def get_collection_id(self, product: Product):
-        return product.collection.id
 
     def calculate_tax(self, product: Product):
         return product.unit_price * Decimal(1.09)   # .quantize(Decimal('0.01'))
 
     def validate(self, attrs):
-        if attrs['slug'] == '':
+        if not attrs.get('slug'):
             attrs['slug'] = slugify(attrs['title'])
         return attrs
     
+    def create(self, validated_data):
+        collection_id = validated_data.pop('collection_id')
+        collection = Collection.objects.get(id=collection_id)
+        validated_data['collection'] = collection
+        return super().create(validated_data)
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
