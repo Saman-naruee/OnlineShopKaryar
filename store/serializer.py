@@ -1,7 +1,7 @@
 from operator import truediv
 from typing import override
 from django.db import transaction
-from django.urls import reverse
+from rest_framework.reverse import reverse
 from rest_framework import serializers
 from decimal import Decimal
 from .models import Product, Collection , Review, Cart, CartItem, \
@@ -11,14 +11,14 @@ from core.models import User
 class CollectionSerializer(serializers.ModelSerializer):  
     class Meta:  
         model = Collection  
-        fields = ['id', 'title', 'products_count'] # , 'products_link' 
+        fields = ['id', 'title', 'products_count', 'products_link' ] #
     
     products_count = serializers.IntegerField(read_only=True)
-    # products_link = serializers.SerializerMethodField()
+    products_link = serializers.SerializerMethodField()
 
-    # def get_products_link(self, obj):
-    #     request = self.context.get('request')
-    #     return reverse('product-list', request=request) + f'?collection_id={obj.id}'
+    def get_products_link(self, obj):
+        request = self.context.get('request')
+        return reverse('products-list', request=request) + f'?collection_id={obj.id}'
     
     def validate_title(self, value):
         if Collection.objects.filter(title=value).exists():
