@@ -181,5 +181,13 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=1, choices=READING_STATUS, default='U')
 
+    def save(self, *args, **kwargs):
+        # preventing changing user once notification is created
+        if self.pk:
+            original = Notification.objects.get(pk=self.pk)
+            if original.user != self.user:
+                raise ValidationError('User cannot be changed once notification is created.')
+        super().save(*args, **kwargs)
+
     def __str__(self) -> str:
         return f'{self.message} - {self.user.username}'
