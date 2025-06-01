@@ -1,6 +1,7 @@
 from operator import truediv
 from typing import override
 from django.db import transaction
+from django.urls import reverse
 from rest_framework import serializers
 from decimal import Decimal
 from .models import Product, Collection , Review, Cart, CartItem, \
@@ -10,14 +11,19 @@ from core.models import User
 class CollectionSerializer(serializers.ModelSerializer):  
     class Meta:  
         model = Collection  
-        fields = ['id', 'title', 'products_count'] 
+        fields = ['id', 'title', 'products_count'] # , 'products_link' 
+    
     products_count = serializers.IntegerField(read_only=True)
+    # products_link = serializers.SerializerMethodField()
 
+    # def get_products_link(self, obj):
+    #     request = self.context.get('request')
+    #     return reverse('product-list', request=request) + f'?collection_id={obj.id}'
+    
     def validate_title(self, value):
         if Collection.objects.filter(title=value).exists():
             raise serializers.ValidationError('Collection with this title already exists!')
         return value
-    
     
 class ProductImageSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
@@ -37,7 +43,11 @@ class ProductSerializer(serializers.ModelSerializer):
             'inventory', 'price_with_tax', 'collection', 'images'
             ] # we can keep other non-existing fields down the bottom like before.
         
-    collection = serializers.PrimaryKeyRelatedField(queryset=Collection.objects.all())
+    collection = serializers.HyperlinkedRelatedField(
+        queryset=Collection.objects.all(),
+        view_name='collection-detail',
+        lookup_field='pk'
+    )
     price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')
     def calculate_tax(self, product: Product):
         return product.unit_price * Decimal(1.09)   # .quantize(Decimal('0.01'))
