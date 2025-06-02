@@ -8,6 +8,8 @@ from .models import Product, Collection , Review, Cart, CartItem, \
       Customer, Order, OrderItem, Notification, ProductImages
 from core.models import User
 from django.utils.text import slugify
+from store.test_tools.tools import custom_log
+
 
 class CollectionSerializer(serializers.ModelSerializer):  
     class Meta:  
@@ -222,13 +224,27 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ['id', 'user', 'message', 'created_at', 'is_admin', 'user_username']
-        read_only_fields = ['id', 'created_at', 'is_admin', 'user_username', 'user']
+        read_only_fields = ['id', 'created_at', 'is_admin', 'user_username']
 
     
     user_username = serializers.SerializerMethodField(method_name='get_user_username')
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        write_only=True,  
+        required=False
+    )
 
     def get_user_username(self, notification: Notification):
         return notification.user.username
+    
+    def update(self, instance, validated_data):
+        if 'user' in validated_data:
+            raise serializers.ValidationError({"user": "User cannot be changed once notification is created."})
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
 
 
     def validate(self, attrs):
@@ -239,18 +255,22 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
         - Staff must specify target user.
         - User cannot be changed once notification is created.
         """
+
         request = self.context.get('request')
         if not request or not request.user:
-            raise serializers.ValidationError('Authentication is required!')
+            raise serializers.ValidationError({"detail": "Authentication is required!"})
         
-        if self.instance and 'user' in attrs:
-            raise serializers.ValidationError("User cannot be changed once notification is created.")
-        
-        if not request.user.is_staff:
-            raise serializers.ValidationError("Only staff users can create and update notifications for any user.")
-        
-        if not attrs.get('user'):
-            raise serializers.ValidationError("Target user must be specified.")
+        if self.instance:
+            # Update an instance
+            if 'user' in attrs and attrs['user'] != self.instance.user:
+                raise serializers.ValidationError({"user": "User cannot be changed once notification is created."})
+        else:
+            # Create a new instance
+            if not request.user.is_staff:
+                raise serializers.ValidationError({"detail": "Only staff users can create notifications for any user."})
+
+            if not attrs.get('user'):
+                raise serializers.ValidationError({"detail": "Target user must be specified."})
         
         return attrs
     

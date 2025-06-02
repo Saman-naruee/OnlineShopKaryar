@@ -255,7 +255,8 @@ class NotificationViewSet(ModelViewSet):
                 try:
                     from core.models import User
                     user = User.objects.get(id=user_id)
-                    serializer.save(user=user)
+                    is_admin = self.request.data.get('is_admin', True)
+                    serializer.save(user=user, is_admin=is_admin)
                 except User.DoesNotExist:
                     raise serializers.ValidationError({"user": "User with this ID does not exist."})
             else:

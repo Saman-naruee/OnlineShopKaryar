@@ -16,13 +16,9 @@ from .serializer import ProductSerializer,\
     CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer,\
     UserProfileSerializer, OrderListSerializer, UserNotificationsSerializer, \
     CreateOrderSerializer, UpdateOrderSerializer, ProductImageSerializer
-import json
-# For logging
-from colorama import Fore, Style
 
-def custom_log(message, color=Fore.BLUE):
-    """Custom log function"""
-    print(color + message + Style.RESET_ALL)
+
+from store.test_tools.tools import custom_log
 
 User = get_user_model()
 
@@ -352,12 +348,13 @@ class NotificationTests(TestCase):
         """Test that admin can create notifications for users"""
         self.client.force_authenticate(user=self.admin_user)
         
-        response = self.client.post(self.notifications_url, {
+        data = {
             'user': self.user1.id,
             'message': 'New notification',
             'is_admin': True
-        })
-        
+        }
+        response = self.client.post(self.notifications_url, data, format='json')
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Notification.objects.count(), 3)
         
@@ -407,10 +404,13 @@ class NotificationTests(TestCase):
         """Test that admin can modify notifications"""
         self.client.force_authenticate(user=self.admin_user)
         
-        response = self.client.patch(f'{self.notifications_url}{self.notification1.id}/', {
+        data = {
             'message': 'Modified message',
-            'user': self.user1.id
-        })
+            'is_admin': True
+        }
+        url = f'{self.notifications_url}{self.notification1.id}/'
+        response = self.client.patch(url, data, format='json')
+        
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.notification1.refresh_from_db()
         self.assertEqual(self.notification1.message, 'Modified message')
