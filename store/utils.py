@@ -46,6 +46,7 @@ def custom_exception_handler(exc, context):
                 'type': exc.__class__.__name__,
                 'message': response.data.get('detail', str(exc)),
                 'code': response.data.get('code', 'unknown_error'),
+                'status': response.status_code
             }
         }
         response.data = customized_response

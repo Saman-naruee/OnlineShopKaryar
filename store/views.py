@@ -25,6 +25,8 @@ from .filters import ProductFilter
 from .pagination import DefaultPagination
 from rest_framework.viewsets import ModelViewSet
 from django.contrib.auth import get_user_model
+from .exceptions import InvalidOrderException, ProductNotFoundError, CollectionNotFoundError, \
+    InvalidInventoryError, DuplicateReviewError, ProductDeletionError
 
 # User = get_user_model()
 
@@ -57,17 +59,16 @@ class ProductViewset(ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         if OrderItem.objects.filter(product_id=kwargs['pk']).count() > 0:
-            return Response({'error': 'product can not be deleted, we have related orderitems!'}, 
-                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            raise ProductDeletionError("Cannot delete a product that is associated with an order item.")
         return super().destroy(request, *args, **kwargs)
-    
-    
+
+
     def update(self, request, *args, **kwargs):
         data = request.data
         if 'inventory' in data and data['inventory'] < 0:
-            return Response({'error': 'inventory can not be negative.'}, status=400)
+            raise InvalidInventoryError("Inventory can not be negative.")
         if 'unit_price' in data and data['unit_price'] < 0:
-            return Response({'error': 'unit_price can not be negative.'}, status=400)
+            raise InvalidInventoryError("Unit price can not be negative.")
         return super().update(request, *args, **kwargs)
     
 
@@ -112,10 +113,15 @@ class ReviewViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         try:
             product_id = self.kwargs['product_pk']
-            Review.objects.get(product_id=product_id, user=request.user)
-            return Response({'error': 'You have already left a review for this product.'}, status=400)
-        except Review.DoesNotExist:
+            if Review.objects.filter(product_id=product_id, user=request.user).exists(): #Review.objects.get(product_id=product_id, user=request.user)
+                raise DuplicateReviewError(
+                    detail="You have already left a review for this product.",
+                )
             return super().create(request, *args, **kwargs)
+        except Product.DoesNotExist:
+            raise ProductNotFoundError(
+                detail=f'Product with id {product_id} does not exist.',
+            )
 
 
 class CartViewSet(CreateModelMixin, DestroyModelMixin,
