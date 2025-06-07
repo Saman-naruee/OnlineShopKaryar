@@ -1,12 +1,12 @@
 from rest_framework.exceptions import APIException
 from rest_framework import status
 
-class ProductNotFoundException(APIException):
+class ProductNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Product not found.'
     default_code = 'product_not_found'
 
-class CollectionNotFoundException(APIException):
+class CollectionNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Collection not found.'
     default_code = 'collection_not_found'
