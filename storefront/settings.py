@@ -192,6 +192,7 @@ DEVELOPER_MODE = True # Must be true just in development you can set it to false
 
 if DEVELOPER_MODE:
     REST_FRAMEWORK = {
+        'EXCEPTION_HANDLER': 'store.utils.custom_exception_handler',
         'COERCE_DECIMAL_TO_STRING': False,
         # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
         'DEFAULT_AUTHENTICATION_CLASSES': (
