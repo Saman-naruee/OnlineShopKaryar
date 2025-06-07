@@ -25,3 +25,8 @@ class ProductDeletionError(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = 'Cannot delete product with existing orders.'
     default_code = 'product_deletion_error'
+
+class InvalidOrderException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Invalid order.'
+    default_code = 'invalid_order'
