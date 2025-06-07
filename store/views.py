@@ -103,6 +103,7 @@ class ReviewViewSet(ModelViewSet):
     A viewset for viewing and editing review instances.
     """
     serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Review.objects.filter(product_id=self.kwargs['product_pk'])
@@ -110,18 +111,29 @@ class ReviewViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {'product_id': self.kwargs['product_pk']}
     
-    def create(self, request, *args, **kwargs):
-        try:
-            product_id = self.kwargs['product_pk']
-            if Review.objects.filter(product_id=product_id, user=request.user).exists(): #Review.objects.get(product_id=product_id, user=request.user)
-                raise DuplicateReviewError(
-                    detail="You have already left a review for this product.",
-                )
-            return super().create(request, *args, **kwargs)
-        except Product.DoesNotExist:
-            raise ProductNotFoundError(
-                detail=f'Product with id {product_id} does not exist.',
+    def perform_create(self, serializer):
+        # try:
+        #     product_id = self.kwargs['product_pk']
+        #     if Review.objects.filter(product_id=product_id, user=request.user).exists(): #Review.objects.get(product_id=product_id, user=request.user)
+        #         raise DuplicateReviewError(
+        #             detail="You have already left a review for this product.",
+        #         )
+        #     return super().create(request, *args, **kwargs)
+        # except Product.DoesNotExist:
+        #     raise ProductNotFoundError(
+        #         detail=f'Product with id {product_id} does not exist.',
+        #     )
+        product_id = self.kwargs['product_pk']
+
+        # Check if product exists
+        product = get_object_or_404(Product, pk=product_id)
+
+        # Check for existing review by the user
+        if Review.objects.filter(product=product, user=self.request.user).exists():
+            raise DuplicateReviewError(
+                detail="You have already left a review for this product.",
             )
+        serializer.save(user=self.request.user, product=product)
 
 
 class CartViewSet(CreateModelMixin, DestroyModelMixin,

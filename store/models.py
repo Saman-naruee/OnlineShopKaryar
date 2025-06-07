@@ -3,7 +3,7 @@ from attr import validate
 from django.db import models
 from django.conf import settings
 from django.contrib import admin
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models  
 from mptt.models import MPTTModel, TreeForeignKey  
 from core.models import User
@@ -157,16 +157,24 @@ class CartItem(models.Model):
 
 class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reveiws')
-    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(null=True, blank=True, default='Anonymous', max_length=255)
     description = models.TextField()
     date = models.DateField(auto_now_add=True)
+    rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
 
     def save(self, *args, **kwargs):
         # A User can only leave one review for a product.
         if Review.objects.filter(product_id=self.product_id, user_id=self.user_id).exists():
             raise ValidationError('A user can only leave one review for a product.')
         super().save(*args, **kwargs)
+    
+    class Meta:
+        unique_together = [['product', 'user']]
+        ordering = ['-date']
+    
+    def __str__(self) -> str:
+        return f'{self.user.username} - {self.rating}/5\n{self.product.title}\t{self.description}'
 
 
 class Notification(models.Model):
