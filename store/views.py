@@ -111,18 +111,18 @@ class ReviewViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {'product_id': self.kwargs['product_pk']}
     
+    def update(self, request, *args, **kwargs):
+        review = self.get_object()
+        if not review.user == self.request.user:
+            raise serializers.ValidationError({'detail': 'You do not have permission to update this review.'}, status=403)
+    
+    def destroy(self, request, *args, **kwargs):
+        review = self.get_object()
+        if not review.user == self.request.user or not request.user.is_staff:
+            raise serializers.ValidationError({'detail': 'You do not have permission to delete this review.'}, status=403)
+        return super().destroy(request, *args, **kwargs)
+
     def perform_create(self, serializer):
-        # try:
-        #     product_id = self.kwargs['product_pk']
-        #     if Review.objects.filter(product_id=product_id, user=request.user).exists(): #Review.objects.get(product_id=product_id, user=request.user)
-        #         raise DuplicateReviewError(
-        #             detail="You have already left a review for this product.",
-        #         )
-        #     return super().create(request, *args, **kwargs)
-        # except Product.DoesNotExist:
-        #     raise ProductNotFoundError(
-        #         detail=f'Product with id {product_id} does not exist.',
-        #     )
         product_id = self.kwargs['product_pk']
 
         # Check if product exists

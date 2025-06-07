@@ -80,12 +80,23 @@ class ProductSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ['id', 'date', 'name', 'description']
+        fields = ['id', 'date', 'name', 'rating', 'user', 'description']
+        read_only_fields = ['date', 'user', 'id']
 
     def create(self, validated_data):
         product_id = self.context['product_id']
         return Review.objects.create(product_id=product_id, **validated_data)
     
+    def validate_rating(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError('Rating must be between 1 and 5')
+        return value
+    
+    def update(self, instance, validated_data):
+        user = self.context['request'].user
+        if not user.is_superuser and instance.user != user:
+            raise serializers.ValidationError('You do not have permission to update this review')
+        return super().update(instance, validated_data)
 
 
 class SimpleProductSerializer(serializers.ModelSerializer):

@@ -161,6 +161,7 @@ class Review(models.Model):
     name = models.CharField(null=True, blank=True, default='Anonymous', max_length=255)
     description = models.TextField()
     date = models.DateField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
     rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
 
     def save(self, *args, **kwargs):
