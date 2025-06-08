@@ -98,10 +98,19 @@ class ProductViewset(ModelViewSet):
     
     def get_serializer_context(self):
         """
-        Returns the serializer context for this viewset.
+        Returns the context dictionary that will be passed to the serializer.
+        
+        The context includes:
+        - request: The current HTTP request object for accessing request data
+        - view: The current view instance
+        - format: The requested data format
+        - product_images: The related product images if any
+
+        This context data helps the serializer properly handle URLs, permissions,
+        and related data during serialization.
 
         Returns:
-            dict: The serializer context for this viewset.
+            dict: A dictionary containing context data for the serializer
         """
         return {'request': self.request}
 
