@@ -33,26 +33,34 @@ from .exceptions import InvalidOrderException, ProductNotFoundError, CollectionN
 
 class ProductViewset(ModelViewSet):
     """
-    A viewset for viewing and editing product instances.
+    A viewset for managing product operations in the store.
 
-    Provides endpoints for listing, creating, retrieving, updating, and deleting products.
-    Includes custom logic for creation to prevent duplicate titles and for deletion
-    to prevent removing products that still have associated orders.
+    This viewset provides CRUD operations for Product models with additional features:
+    - Filtering products by collection, price range, and other attributes
+    - Searching products by title and description 
+    - Ordering products by price and last update date
+    - Pagination support
+    - Image management for products
+    - Inventory validation
+    - Protection against deleting products with existing orders
+
+    Endpoints:
+        GET /products/ - List all products with optional filters
+        POST /products/ - Create a new product (admin only)
+        GET /products/{id}/ - Retrieve a specific product
+        PUT/PATCH /products/{id}/ - Update a product (admin only)
+        DELETE /products/{id}/ - Delete a product (admin only)
 
     Attributes:
-        filter_backends (list): A list of filter backends to use for this viewset.
-        permission_classes (list): A list of permission classes to use for this viewset.
-        search_fields (list): A list of fields to search for this viewset.
-        ordering_fields (list): A list of fields to order for this viewset.
-        filterset_class (class): The filter set class to use for this viewset.
-        pagination_class (class): The pagination class to use for this viewset.
-        serializer_class (class): The serializer class to use for this viewset.
-
-    Methods:
-        get_queryset: Returns the queryset for this viewset.
-        get_serializer_context: Returns the serializer context for this viewset.
-        destroy: Handles the deletion of a product instance.
-        update: Handles the update of a product instance.
+        filter_backends (list): Configures DjangoFilterBackend for filtering, SearchFilter 
+            for search, and OrderingFilter for sorting results
+        permission_classes (list): [IsAdminOrReadOnly] - Allow read access to all users 
+            but restrict create/update/delete to admin users
+        search_fields (list): Fields that can be searched ('title', 'description')
+        ordering_fields (list): Fields that can be used for sorting results
+        filterset_class (ProductFilter): Custom filter class for advanced filtering
+        pagination_class (DefaultPagination): Handles result pagination
+        serializer_class (ProductSerializer): Handles product data serialization
     """
     # queryset = Product.objects.prefetch_related('images').all() # To decrease the number of queries of the database, grab images of each product.
 
@@ -68,10 +76,19 @@ class ProductViewset(ModelViewSet):
 
     def get_queryset(self):
         """
-        Returns the queryset for this viewset.
+        Returns an optimized queryset of products with optional collection filtering.
+
+        This method:
+        1. Prefetches related product images to minimize database queries
+        2. Applies collection filtering if collection_id is provided in query params
+        3. Returns all products if no collection filter is specified
 
         Returns:
-            QuerySet: The queryset for this viewset.
+            QuerySet: A queryset of Product instances with prefetched images
+
+        Example:
+            GET /products/?collection_id=1 - Returns products in collection 1
+            GET /products/ - Returns all products
         """
         queryset = Product.objects.prefetch_related('images').all()
         collection_id = self.request.query_params.get('collection_id')
@@ -90,15 +107,26 @@ class ProductViewset(ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         """
-        Handles the deletion of a product instance.
+        Handles product deletion with order validation.
+
+        Prevents deletion of products that have associated order items to maintain
+        data integrity and order history. Only admin users can delete products.
 
         Args:
-            request (Request): The request object.
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
+            request (Request): The HTTP request object
+            *args: Variable length argument list
+            **kwargs: Arbitrary keyword arguments including 'pk' for product ID
 
         Returns:
-            Response: The response object.
+            Response: Empty response with 204 status on successful deletion
+
+        Raises:
+            ProductDeletionError: If product has associated order items
+            PermissionDenied: If user is not an admin
+            NotFound: If product does not exist
+
+        Example:
+            DELETE /products/1/ - Deletes product with ID 1 if possible
         """
         if OrderItem.objects.filter(product_id=kwargs['pk']).count() > 0:
             raise ProductDeletionError("Cannot delete a product that is associated with an order item.")
