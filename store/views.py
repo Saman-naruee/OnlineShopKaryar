@@ -34,12 +34,31 @@ from .exceptions import InvalidOrderException, ProductNotFoundError, CollectionN
 class ProductViewset(ModelViewSet):
     """
     A viewset for viewing and editing product instances.
+
+    Provides endpoints for listing, creating, retrieving, updating, and deleting products.
+    Includes custom logic for creation to prevent duplicate titles and for deletion
+    to prevent removing products that still have associated orders.
+
+    Attributes:
+        filter_backends (list): A list of filter backends to use for this viewset.
+        permission_classes (list): A list of permission classes to use for this viewset.
+        search_fields (list): A list of fields to search for this viewset.
+        ordering_fields (list): A list of fields to order for this viewset.
+        filterset_class (class): The filter set class to use for this viewset.
+        pagination_class (class): The pagination class to use for this viewset.
+        serializer_class (class): The serializer class to use for this viewset.
+
+    Methods:
+        get_queryset: Returns the queryset for this viewset.
+        get_serializer_context: Returns the serializer context for this viewset.
+        destroy: Handles the deletion of a product instance.
+        update: Handles the update of a product instance.
     """
     # queryset = Product.objects.prefetch_related('images').all() # To decrease the number of queries of the database, grab images of each product.
-    
+
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     permission_classes = [IsAdminOrReadOnly] # IsAuthenticated
-    
+
     search_fields = ['title', 'description']
     ordering_fields = ['unit_price', 'last_update']
 
@@ -48,6 +67,12 @@ class ProductViewset(ModelViewSet):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
+        """
+        Returns the queryset for this viewset.
+
+        Returns:
+            QuerySet: The queryset for this viewset.
+        """
         queryset = Product.objects.prefetch_related('images').all()
         collection_id = self.request.query_params.get('collection_id')
         if collection_id:
@@ -55,15 +80,43 @@ class ProductViewset(ModelViewSet):
         return queryset
     
     def get_serializer_context(self):
+        """
+        Returns the serializer context for this viewset.
+
+        Returns:
+            dict: The serializer context for this viewset.
+        """
         return {'request': self.request}
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Handles the deletion of a product instance.
+
+        Args:
+            request (Request): The request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response: The response object.
+        """
         if OrderItem.objects.filter(product_id=kwargs['pk']).count() > 0:
             raise ProductDeletionError("Cannot delete a product that is associated with an order item.")
         return super().destroy(request, *args, **kwargs)
 
 
     def update(self, request, *args, **kwargs):
+        """
+        Handles the update of a product instance.
+
+        Args:
+            request (Request): The request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response: The response object.
+        """
         data = request.data
         if 'inventory' in data and data['inventory'] < 0:
             raise InvalidInventoryError("Inventory can not be negative.")
@@ -75,20 +128,52 @@ class ProductViewset(ModelViewSet):
 class CollectionViewSet(ModelViewSet):
     """
     A viewset for performing CRUD operations on Collection instances.
+
     Provides endpoints for listing, creating, retrieving, updating, and deleting collections.
     Includes custom logic for creation to prevent duplicate titles and for deletion
     to prevent removing collections that still have associated products.
+
+    Attributes:
+        queryset (QuerySet): The queryset for this viewset.
+        serializer_class (class): The serializer class to use for this viewset.
+        permission_classes (list): A list of permission classes to use for this viewset.
+
+    Methods:
+        create: Handles the creation of a collection instance.
+        destroy: Handles the deletion of a collection instance.
     """
     queryset = Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
 
     def create(self, request, *args, **kwargs):
+        """
+        Handles the creation of a collection instance.
+
+        Args:
+            request (Request): The request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response: The response object.
+        """
         if Collection.objects.filter(title=request.data['title']).exists():
             return Response({'error': 'Collection with this title already exists.'}, status=400)
         return super().create(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Handles the deletion of a collection instance.
+
+        Args:
+            request (Request): The request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response: The response object.
+        """
         collection = get_object_or_404(Collection, pk=kwargs['pk'])
         products_count = Product.objects.filter(collection=collection).count() > 0
         if products_count:
@@ -101,28 +186,86 @@ class CollectionViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     """
     A viewset for viewing and editing review instances.
+
+    Provides endpoints for listing, creating, retrieving, updating, and deleting reviews.
+    Includes custom logic for creation to prevent duplicate reviews and for deletion
+    to prevent removing reviews that still have associated products.
+
+    Attributes:
+        serializer_class (class): The serializer class to use for this viewset.
+        permission_classes (list): A list of permission classes to use for this viewset.
+
+    Methods:
+        get_queryset: Returns the queryset for this viewset.
+        get_serializer_context: Returns the serializer context for this viewset.
+        update: Handles the update of a review instance.
+        destroy: Handles the deletion of a review instance.
+        perform_create: Handles the creation of a review instance.
     """
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """
+        Returns the queryset for this viewset.
+
+        Returns:
+            QuerySet: The queryset for this viewset.
+        """
         return Review.objects.filter(product_id=self.kwargs['product_pk'])
     
     def get_serializer_context(self):
+        """
+        Returns the serializer context for this viewset.
+
+        Returns:
+            dict: The serializer context for this viewset.
+        """
         return {'product_id': self.kwargs['product_pk']}
     
     def update(self, request, *args, **kwargs):
+        """
+        Handles the update of a review instance.
+
+        Args:
+            request (Request): The request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response: The response object.
+        """
         review = self.get_object()
         if not review.user == self.request.user:
             raise serializers.ValidationError({'detail': 'You do not have permission to update this review.'}, status=403)
     
     def destroy(self, request, *args, **kwargs):
+        """
+        Handles the deletion of a review instance.
+
+        Args:
+            request (Request): The request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response: The response object.
+        """
         review = self.get_object()
         if not review.user == self.request.user or not request.user.is_staff:
             raise serializers.ValidationError({'detail': 'You do not have permission to delete this review.'}, status=403)
         return super().destroy(request, *args, **kwargs)
 
     def perform_create(self, serializer):
+        """
+        Handles the creation of a review instance.
+
+        Args:
+            serializer (Serializer): The serializer object.
+
+        Returns:
+            Response: The response object.
+        """
         product_id = self.kwargs['product_pk']
 
         # Check if product exists
@@ -140,6 +283,12 @@ class CartViewSet(CreateModelMixin, DestroyModelMixin,
                 RetrieveModelMixin, GenericViewSet, ListModelMixin):
     """
     A viewset for viewing and editing cart instances.
+
+    Provides endpoints for listing, creating, retrieving, and deleting carts.
+
+    Attributes:
+        queryset (QuerySet): The queryset for this viewset.
+        serializer_class (class): The serializer class to use for this viewset.
     """
     queryset = Cart.objects.prefetch_related('items__product').all()
     serializer_class = CartSerializer
@@ -147,10 +296,27 @@ class CartViewSet(CreateModelMixin, DestroyModelMixin,
 class CartitemViewSet(ModelViewSet):
     """
     A viewset for viewing and editing cart item instances.
+
+    Provides endpoints for listing, creating, retrieving, updating, and deleting cart items.
+
+    Attributes:
+        http_method_names (list): A list of HTTP methods to use for this viewset.
+        serializer_class (class): The serializer class to use for this viewset.
+
+    Methods:
+        get_serializer_class: Returns the serializer class for this viewset.
+        get_serializer_context: Returns the serializer context for this viewset.
+        get_queryset: Returns the queryset for this viewset.
     """
     http_method_names = ['get', 'post', 'patch', 'delete']
     
     def get_serializer_class(self):
+        """
+        Returns the serializer class for this viewset.
+
+        Returns:
+            class: The serializer class for this viewset.
+        """
         if self.request.method == 'POST': 
             return AddCartItemSerializer
         elif self.request.method == 'PATCH':
@@ -158,14 +324,37 @@ class CartitemViewSet(ModelViewSet):
         return CartItemSerializer
     
     def get_serializer_context(self):
+        """
+        Returns the serializer context for this viewset.
+
+        Returns:
+            dict: The serializer context for this viewset.
+        """
         return {'cart_id': self.kwargs['cart_pk']} # pass to serializer for using cart_id from url.
 
     def get_queryset(self):
+        """
+        Returns the queryset for this viewset.
+
+        Returns:
+            QuerySet: The queryset for this viewset.
+        """
         return CartItem.objects.filter(cart_id=self.kwargs['cart_pk']).select_related('product')
 
 class CustomViewSet(ModelViewSet):
     """
     A viewset for viewing and editing customer instances.
+
+    Provides endpoints for listing, creating, retrieving, updating, and deleting customers.
+
+    Attributes:
+        queryset (QuerySet): The queryset for this viewset.
+        serializer_class (class): The serializer class to use for this viewset.
+        permission_classes (list): A list of permission classes to use for this viewset.
+
+    Methods:
+        history: Handles the history of a customer instance.
+        me: Handles the current user's customer instance.
     """
     queryset = Customer.objects.all()
     serializer_class = UserProfileSerializer
@@ -173,10 +362,29 @@ class CustomViewSet(ModelViewSet):
 
     @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
     def history(self, request, pk):
+        """
+        Handles the history of a customer instance.
+
+        Args:
+            request (Request): The request object.
+            pk (int): The primary key of the customer instance.
+
+        Returns:
+            Response: The response object.
+        """
         return Response({'Status': 'OK'})
  
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def me(self, request): # this is for user profile, and 'me' shows 
+        """
+        Handles the current user's customer instance.
+
+        Args:
+            request (Request): The request object.
+
+        Returns:
+            Response: The response object.
+        """
         customer, is_created = Customer.objects.get_or_create(user_id=request.user.id)
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication credentials were not provided."}, status=401)
@@ -192,15 +400,44 @@ class CustomViewSet(ModelViewSet):
 class OrderViewSet(ModelViewSet):
     """
     A viewset for viewing and editing order instances.
+
+    Provides endpoints for listing, creating, retrieving, updating, and deleting orders.
+
+    Attributes:
+        http_method_names (list): A list of HTTP methods to use for this viewset.
+        permission_classes (list): A list of permission classes to use for this viewset.
+
+    Methods:
+        get_permissions: Returns the permission classes for this viewset.
+        create: Handles the creation of an order instance.
+        get_serializer_class: Returns the serializer class for this viewset.
+        get_queryset: Returns the queryset for this viewset.
     """
     http_method_names = ['get', 'patch', 'delete', 'head', 'options']
 
     def get_permissions(self):
+        """
+        Returns the permission classes for this viewset.
+
+        Returns:
+            list: A list of permission classes for this viewset.
+        """
         if self.request.method in ['PATCH', 'DELETE']:
             return [IsAdminUser()]
         return [IsAuthenticated()]
 
     def create(self, request, *args, **kwargs):
+        """
+        Handles the creation of an order instance.
+
+        Args:
+            request (Request): The request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response: The response object.
+        """
         serializer = CreateOrderSerializer(
             data=request.data,
             context = {
@@ -214,6 +451,12 @@ class OrderViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_serializer_class(self):
+        """
+        Returns the serializer class for this viewset.
+
+        Returns:
+            class: The serializer class for this viewset.
+        """
         if self.request.method == 'POST':
             return CreateOrderSerializer
         elif self.request.method == 'PATCH':
@@ -221,6 +464,12 @@ class OrderViewSet(ModelViewSet):
         return OrderListSerializer
  
     def get_queryset(self):
+        """
+        Returns the queryset for this viewset.
+
+        Returns:
+            QuerySet: The queryset for this viewset.
+        """
         current_user = self.request.user
         if current_user.is_staff:
             return Order.objects.all()
@@ -233,19 +482,25 @@ class NotificationViewSet(ModelViewSet):
     """
     A viewset for managing notifications.
 
-    Only staff users can create, update, or delete notifications.
-    Regular users can only read their own notifications.
-    Supports filtering by last received timestamp.
+    Provides endpoints for listing, creating, retrieving, updating, and deleting notifications.
+
+    Attributes:
+        serializer_class (class): The serializer class to use for this viewset.
+        permission_classes (list): A list of permission classes to use for this viewset.
+
+    Methods:
+        get_queryset: Returns the queryset for this viewset.
+        perform_create: Handles the creation of a notification instance.
     """
     serializer_class = UserNotificationsSerializer
     permission_classes = [IsAuthenticated, NotificationsPermission]
 
     def get_queryset(self): 
         """
-        Filter notifications:
-        - staff users can see all notification blong to all users
-        - regular users can only see their own notifications
-        - optionally filter by last received timestamp.
+        Returns the queryset for this viewset.
+
+        Returns:
+            QuerySet: The queryset for this viewset.
         """
         
         if self.request.user.is_staff:
@@ -262,9 +517,13 @@ class NotificationViewSet(ModelViewSet):
     
     def perform_create(self, serializer):
         """
-        When creating a notification:
-        - Admin users can create notifications for any user
-        - The target user is specified in the request data
+        Handles the creation of a notification instance.
+
+        Args:
+            serializer (Serializer): The serializer object.
+
+        Returns:
+            Response: The response object.
         """
         if self.request.user.is_staff:
             # Get the target user from the request data
@@ -286,11 +545,32 @@ class NotificationViewSet(ModelViewSet):
 class ProductImageViewSet(ModelViewSet):
     """
     A viewset for viewing and editing product image instances.
+
+    Provides endpoints for listing, creating, retrieving, updating, and deleting product images.
+
+    Attributes:
+        serializer_class (class): The serializer class to use for this viewset.
+
+    Methods:
+        get_queryset: Returns the queryset for this viewset.
+        get_serializer_context: Returns the serializer context for this viewset.
     """
     serializer_class = ProductImageSerializer
 
     def get_queryset(self):
+        """
+        Returns the queryset for this viewset.
+
+        Returns:
+            QuerySet: The queryset for this viewset.
+        """
         return ProductImages.objects.filter(product_id=self.kwargs['product_pk']) # to get product_pk from url: <-
     
     def get_serializer_context(self):
+        """
+        Returns the serializer context for this viewset.
+
+        Returns:
+            dict: The serializer context for this viewset.
+        """
         return {'product_pk': self.kwargs['product_pk'], 'request': self.request}
