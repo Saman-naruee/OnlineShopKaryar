@@ -36,11 +36,23 @@ class WebsiteUser(HttpUser):
             json={'product_id': product_id, 'quantity': 1}
         )    
 
+
     @override
     def on_start(self) -> None:
         custom_logger("Starting")
-        response = self.client.post('/store/carts/')
-        result = response.json()
-        self.cart_id = result['id']
+        try:
+            response = self.client.post('/store/carts/')
+        except Exception as e:
+            custom_logger(f"Failed to create cart, details: {str(e)}")
+            return
+        custom_logger(f"Response Status: {response.status_code}, Content: {response.text}")
+        
+        try:
+            result = response.json()
+            self.cart_id = result['id']
+        except Exception as e:
+            custom_logger(f"Failed to parse response: {str(e)}")
+            # Handle failure (perhaps create a default cart ID)
+            self.cart_id = "default_cart"  # Temporary workaround
 
 
