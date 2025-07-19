@@ -18,7 +18,7 @@ from .serializer import ProductSerializer,\
     CreateOrderSerializer, UpdateOrderSerializer, ProductImageSerializer
 
 
-from store.test_tools.tools import custom_log
+from store.test_tools.tools import custom_logger
 
 User = get_user_model()
 

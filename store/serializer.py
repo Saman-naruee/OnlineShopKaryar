@@ -8,7 +8,7 @@ from .models import Product, Collection , Review, Cart, CartItem, \
       Customer, Order, OrderItem, Notification, ProductImages
 from core.models import User
 from django.utils.text import slugify
-from store.test_tools.tools import custom_log
+from store.test_tools.tools import custom_logger
 
 
 class CollectionSerializer(serializers.ModelSerializer):  

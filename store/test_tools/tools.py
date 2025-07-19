@@ -1,7 +1,7 @@
 import inspect
 from colorama import Fore, Style
 
-def custom_log(message, color=Fore.BLUE):
+def custom_logger(message, color=Fore.BLUE):
     """Custom log function that also shows the calling line"""
     # Get the frame of the caller
     frame = inspect.currentframe().f_back
