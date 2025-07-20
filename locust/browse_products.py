@@ -28,24 +28,27 @@ class WebsiteUser(HttpUser):
 
     @task
     def add_to_cart(self):
-        custom_logger("Adding to cart")
+        custom_logger(f'Adding to cart')
         product_id = randint(1, 10)
         self.client.post(
             f'/store/carts/{self.cart_id}/items/',
             name='/store/carts/items',
             json={'product_id': product_id, 'quantity': 1}
-        )    
+        ) 
+
+    @task
+    def create_cart(self):
+        custom_logger(f'Creating cart')
+        self.client.post('/store/carts/')
 
 
     @override
     def on_start(self) -> None:
-        custom_logger("Starting")
         try:
             response = self.client.post('/store/carts/')
         except Exception as e:
             custom_logger(f"Failed to create cart, details: {str(e)}")
             return
-        custom_logger(f"Response Status: {response.status_code}, Content: {response.text}")
         
         try:
             result = response.json()

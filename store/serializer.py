@@ -123,7 +123,9 @@ class CartSerializer(serializers.ModelSerializer):
         return sum([item.quantity * item.product.unit_price for item in cart.items.all()])
     class Meta:
         model = Cart
-        fields = ['uid', 'items', 'total_price']
+        fields = ['uid', 'items', 'total_price', 'customer']
+        read_only_fields = ['uid', 'customer']
+
 
 class AddCartItemSerializer(serializers.ModelSerializer):
     product_id = serializers.IntegerField() 
