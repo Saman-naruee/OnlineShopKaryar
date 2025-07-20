@@ -3,8 +3,10 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from colorama import Fore
 
 from core.models import User
+from store.test_tools.tools import custom_logger
 from .permissions import IsAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission, NotificationsPermission
 from rest_framework import status, serializers
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, IsAdminUser, AllowAny
@@ -329,6 +331,29 @@ class CartViewSet(CreateModelMixin, DestroyModelMixin,
     """
     queryset = Cart.objects.prefetch_related('items__product').all()
     serializer_class = CartSerializer
+
+    def create(self, request, *args, **kwargs):
+        # If the user is authenticated, get or create the customer?
+        if request.user.is_authenticated:
+            # Try to get the customer for this user
+            try:
+                customer = User.objects.get(user=request.user)
+            except User.DoesNotExist:
+                custom_logger("User does not exist", color=Fore.RED)
+        else:
+            customer = None
+
+        # Now, we want to create a cart with the customer
+        # But note: the CartSerializer doesn't have a customer field? We must pass it in the context?
+        # Or we can set it after saving the serializer?
+        serializer = self.get_serializer(data=request.data, context={'customer': customer})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer, customer=customer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer, customer=None):
+        serializer.save(customer=customer)
  
 class CartitemViewSet(ModelViewSet):
     """

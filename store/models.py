@@ -139,7 +139,7 @@ import uuid
 class Cart(models.Model):
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='carts')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='carts')
 
     def __str__(self) -> str:
         return str(self.created_at)

@@ -125,6 +125,12 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ['uid', 'items', 'total_price', 'customer']
         read_only_fields = ['uid', 'customer']
+    
+    def create(self, validated_data):
+        # We can get the customer from the context
+        customer = self.context.get('customer')
+        validated_data['customer'] = customer
+        return super().create(validated_data)
 
 
 class AddCartItemSerializer(serializers.ModelSerializer):

@@ -165,7 +165,7 @@ class CartModelTest(TestCase):
             phone='9876543210',
             membership='B'
         )
-        self.assertNotEqual(self.cart.customer, other_customer)
+        self.assertNotEqual(self.cart.user, other_customer)
 
 
 class ReviewModelTest(TestCase):
