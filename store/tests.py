@@ -43,7 +43,7 @@ class NotificationModelTest(TestCase):
 
         # create a notification
         self.notification = Notification.objects.create(
-            user=self.customer.user,
+            user=self.user,
             message='Test notification',
             is_admin=False,
             status='U' # Unread
@@ -53,7 +53,7 @@ class NotificationModelTest(TestCase):
         self.assertEqual(self.notification.message, 'Test notification')
         self.assertEqual(self.notification.is_admin, False)
         self.assertEqual(self.notification.status, 'U')
-        self.assertEqual(self.notification.user, self.customer.user)
+        self.assertEqual(self.notification.user, self.user)
 
     def test_notification_string_representation(self):
         """Test the string representation of a notification"""
@@ -206,27 +206,6 @@ class ReviewModelTest(TestCase):
         self.assertEqual(self.review.product, self.product)
         self.assertEqual(self.review.name, 'Test Review')
         self.assertEqual(self.review.description, 'Test review description')
-
-
-class CustomerModelTest(TestCase):
-    """Test the Customer model"""
-    
-    def setUp(self):
-        self.user = User.objects.create_user(
-            username='testuser',
-            password='testpass123',
-            email='testuser@example.com'
-        )
-        self.customer = Customer.objects.create(
-            user=self.user,
-            phone='1234567890',
-            membership='B'
-        )
-    
-    def test_customer_creation(self):
-        self.assertEqual(self.customer.user, self.user)
-        self.assertEqual(self.customer.phone, '1234567890')
-        self.assertEqual(self.customer.membership, 'B')
 
 
 

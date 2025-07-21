@@ -4,10 +4,11 @@ from django.db.models import Count
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from colorama import Fore
+from httpx import get
 
 from core.models import User
 from store.test_tools.tools import custom_logger
-from .permissions import IsAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission, NotificationsPermission
+from .permissions import IsAdminOrReadOnly, FullDjangoModelPermissions, IsCartItemOwner, IsCartOwner, ViewCustomerHistoryPermission, NotificationsPermission
 from rest_framework import status, serializers
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, IsAdminUser, AllowAny
 from rest_framework.decorators import action, api_view
@@ -15,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.exceptions import PermissionDenied
 from .models import Product, Collection, OrderItem, Review, Cart, \
     CartItem, Customer, Order, Notification, ProductImages
 
@@ -332,30 +334,31 @@ class CartViewSet(CreateModelMixin, DestroyModelMixin,
     queryset = Cart.objects.prefetch_related('items__product').all()
     serializer_class = CartSerializer
 
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsCartOwner()]
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
     def create(self, request, *args, **kwargs):
-        # If the user is authenticated, get or create the customer?
-        if request.user.is_authenticated:
-            # Try to get the customer for this user
-            try:
-                customer = User.objects.get(user=request.user)
-            except User.DoesNotExist:
-                custom_logger("User does not exist", color=Fore.RED)
-        else:
-            customer = None
+        user_obj = request.user if request.user.is_authenticated else None
 
-        # Now, we want to create a cart with the customer
-        # But note: the CartSerializer doesn't have a customer field? We must pass it in the context?
-        # Or we can set it after saving the serializer?
-        serializer = self.get_serializer(data=request.data, context={'customer': customer})
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer, customer=customer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        # pass the user object in the context with the key 'user'
+        if user_obj is not None:
+            serializer = self.get_serializer(data=request.data, context={'user': user_obj})
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer, user_obj=user_obj)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    def perform_create(self, serializer, customer=None):
-        serializer.save(customer=customer)
+    def perform_create(self, serializer, user_obj=None):
+        if user_obj is not None:
+            serializer.save(user=user_obj)
  
-class CartitemViewSet(ModelViewSet):
+class CartItemViewSet(ModelViewSet):
     """
     A viewset for viewing and editing cart item instances.
 
@@ -371,6 +374,7 @@ class CartitemViewSet(ModelViewSet):
         get_queryset: Returns the queryset for this viewset.
     """
     http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = [IsAuthenticated, IsCartItemOwner]
     
     def get_serializer_class(self):
         """
@@ -392,7 +396,7 @@ class CartitemViewSet(ModelViewSet):
         Returns:
             dict: The serializer context for this viewset.
         """
-        return {'cart_id': self.kwargs['cart_pk']} # pass to serializer for using cart_id from url.
+        return {'cart_id': self.kwargs['cart_pk'], 'request': self.request} # pass to serializer for using cart_id from url.
 
     def get_queryset(self):
         """
@@ -401,7 +405,27 @@ class CartitemViewSet(ModelViewSet):
         Returns:
             QuerySet: The queryset for this viewset.
         """
-        return CartItem.objects.filter(cart_id=self.kwargs['cart_pk']).select_related('product')
+        cart_id = self.kwargs['cart_pk']
+        # Verify that the cart belongs to current user
+        cart = get_object_or_404(Cart, pk=cart_id, user=self.request.user)
+        return CartItem.objects.filter(cart_id=cart_id).select_related('product')
+    
+    def get_cart(self):
+        """
+        Returns the cart for this viewset.
+        """
+        cart_id = self.kwargs['cart_pk']
+        cart = get_object_or_404(Cart, pk=cart_id)
+
+        # Check cart's ownership
+        if cart.user != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("You do not have permission to access this cart.")
+        return cart
+    
+    def perform_create(self, serializer):
+        cart = self.get_cart()
+        serializer.save(cart=cart)
+
 
 class CustomViewSet(ModelViewSet):
     """

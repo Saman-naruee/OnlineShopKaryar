@@ -1,5 +1,7 @@
+from hmac import new
 from operator import truediv
 from typing import override
+from attr import validate
 from django.db import transaction
 from rest_framework.reverse import reverse
 from rest_framework import serializers
@@ -123,14 +125,14 @@ class CartSerializer(serializers.ModelSerializer):
         return sum([item.quantity * item.product.unit_price for item in cart.items.all()])
     class Meta:
         model = Cart
-        fields = ['uid', 'items', 'total_price', 'customer']
-        read_only_fields = ['uid', 'customer']
+        fields = ['uid', 'items', 'total_price', 'user_id']
+        read_only_fields = ['uid', 'user_id']
     
     def create(self, validated_data):
-        # We can get the customer from the context
-        customer = self.context.get('customer')
-        validated_data['customer'] = customer
-        return super().create(validated_data)
+        with transaction.atomic():
+            user = self.context.get('user')
+            validated_data['user'] = user
+            return super().create(validated_data)
 
 
 class AddCartItemSerializer(serializers.ModelSerializer):
@@ -140,30 +142,71 @@ class AddCartItemSerializer(serializers.ModelSerializer):
         if  not Product.objects.filter(pk=value).exists():
             raise serializers.ValidationError('Does not found any product match with this id.')
         return value
-    def save(self, **kwargs):
-        cart_id = self.context['cart_id'] # came from view: overrided of get_serializer_context
-        product_id = self.validated_data['product_id']
-        quantity = self.validated_data['quantity']
+    
+    def validate(self, data):
+        product_id = data['product_id']
+        quantity = data['quantity']
 
         try:
-            # update an existing item
+            product = Product.objects.get(pk=product_id)
+        except Product.DoesNotExist:
+            raise serializers.ValidationError('Does not found any product match with this id.')
+        
+        # Check if adding to existing cart item
+        cart_id = self.context['cart_id']
+        try:
             cart_item = CartItem.objects.get(cart_id=cart_id, product_id=product_id)
-            cart_item.quantity += quantity
-            cart_item.save()
-            self.instance = cart_item
+            total_quantity = cart_item.quantity + quantity
         except CartItem.DoesNotExist:
-            # create a new item
-            self.instance = CartItem.objects.create(cart_id=cart_id, **self.validated_data)
+            total_quantity = quantity
 
-        return self.instance
-    class Meta:
-        model  = CartItem
-        fields = ['uid', 'product_id', 'quantity']
+        if total_quantity > product.inventory:
+            raise serializers.ValidationError('Not enough inventory')
+        if product.inventory < 1:
+            raise serializers.ValidationError('Not enough inventory')
+        
+        return data
+    
+
+    def save(self, **kwargs):
+        with transaction.atomic():
+            cart_id = self.context['cart_id'] # came from view: overrided of get_serializer_context
+            product_id = self.validated_data['product_id']
+            quantity = self.validated_data['quantity']
+
+            try:
+                # update an existing item
+                cart_item = CartItem.objects.get(cart_id=cart_id, product_id=product_id)
+                cart_item.quantity += quantity
+                cart_item.save()
+                self.instance = cart_item
+            except CartItem.DoesNotExist:
+                # create a new item
+                self.instance = CartItem.objects.create(cart_id=cart_id, **self.validated_data)
+
+            return self.instance
+        class Meta:
+            model  = CartItem
+            fields = ['uid', 'product_id', 'quantity']
 
 class UpdateCartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
         fields = ['quantity']
+
+        def validate_quantity(self, value):
+            if value < 1:
+                raise serializers.ValidationError('Quantity must be greater than 0')
+            return value
+        
+        def validate(self, data):
+            cart_item = self.instance
+            new_quantity = data.get('quantity', cart_item.quantity)
+
+            # Check if inventory is sufficient
+            if new_quantity > cart_item.product.inventory:
+                raise serializers.ValidationError('Requested quantity exceeds available inventory.')
+            return data
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(read_only=True)

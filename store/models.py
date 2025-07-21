@@ -4,11 +4,13 @@ from django.db import models
 from django.conf import settings
 from django.contrib import admin
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
 from django.db import models  
 from mptt.models import MPTTModel, TreeForeignKey  
 from core.models import User
 from .validators import validate_image_size
 from django.core.exceptions import ValidationError
+
 # import pillow
 
 
@@ -140,9 +142,16 @@ class Cart(models.Model):
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='carts')
+    last_activity = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return str(self.created_at)
+    
+    @property
+    def is_expired(self):
+        # Consider carts inactive after 3 days
+        expired_time = timezone.now() - timezone.timedelta(days=3)
+        return self.last_activity < expired_time
 
 
 class CartItem(models.Model):
@@ -150,6 +159,9 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
+
+    def __str__(self) -> str:
+        return f'{self.product.title} - {self.quantity}'
 
     class Meta:
         unique_together = [['cart', 'product']]

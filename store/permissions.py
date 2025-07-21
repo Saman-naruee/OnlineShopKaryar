@@ -2,6 +2,8 @@ from typing import override
 from rest_framework.permissions import BasePermission
 from rest_framework import permissions
 
+from store.models import Cart, CartItem
+
 class IsAdminOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
@@ -39,3 +41,28 @@ class NotificationsPermission(permissions.BasePermission):
         
         # Only admin can update and delete notifications
         return bool(request.user and request.user.is_staff and request.user.is_authenticated)
+
+class IsCartOwner(permissions.BasePermission):
+    """
+    Custom permission to only allow owners of a cart to view, edit or delete it.
+    """
+    def has_permission(self, request, view, obj=None):
+        cart_id = view.kwargs.get('cart_pk')
+        try:
+            cart = Cart.objects.get(pk=cart_id)
+            return cart.user == request.user
+        except Cart.DoesNotExist:
+            return False
+    
+
+class IsCartItemOwner(permissions.BasePermission):
+    """
+    Custom permission to only allow owners of a cart item to view, edit or delete it.
+    """
+    def has_permission(self, request, view, obj=None):
+        cart_item_id = view.kwargs.get('pk')
+        try:
+            cart_item = CartItem.objects.get(pk=cart_item_id)
+            return cart_item.cart.user == request.user
+        except CartItem.DoesNotExist:
+            return False

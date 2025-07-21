@@ -38,7 +38,7 @@ class WebsiteUser(HttpUser):
             self.cart_id = result['uid']
             custom_logger(f"Cart created with ID: {self.cart_id}")
         except Exception as e:
-            custom_logger(f"Authentication or cart creation failed: ##/n{str(e)}/n##", color=Fore.RED)
+            custom_logger(f"Authentication or cart creation failed: ##\n{str(e)}\n##", color=Fore.RED)
             self.access_token = None  # Ensure token is None on failure
             self.cart_id = None
             return
