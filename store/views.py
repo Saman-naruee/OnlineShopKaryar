@@ -357,7 +357,7 @@ class CartItemViewSet(ModelViewSet):
         get_queryset: Returns the queryset for this viewset.
     """
     http_method_names = ['get', 'post', 'patch', 'delete']
-    permission_classes = [IsAuthenticated, IsCartItemOwner]
+    permission_classes = [IsAuthenticated]
     
     def get_serializer_class(self):
         """

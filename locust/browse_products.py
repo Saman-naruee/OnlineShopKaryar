@@ -79,7 +79,6 @@ class WebsiteUser(HttpUser):
             custom_logger("Skipping view_product_details: No access token")
             return
 
-        custom_logger("Viewing product details")
         product_id = randint(1, 1000)
         self.client.get(
             f'/store/products/{product_id}',
@@ -98,9 +97,18 @@ class WebsiteUser(HttpUser):
             return
 
         product_id = randint(1, 10)
-        self.client.post(
+        # Fix the URL format - it should include the cart_id in the path
+        custom_logger(f"Cart ID: {self.cart_id}")
+
+        response = self.client.post(
             f'/store/carts/{self.cart_id}/items/',
             name='/store/carts/items',
             json={'product_id': product_id, 'quantity': 1},
-            headers=self.get_auth_header()  # Add auth header
+            headers=self.get_auth_header()
         )
+        
+        if response.status_code == 200 or response.status_code == 201:
+            custom_logger(f"Successfully added product {product_id} to cart {self.cart_id}")
+        else:
+            custom_logger(f"Failed to add product to cart: {response.status_code} - {response.text}", color=Fore.RED)
+        custom_logger(f"Response Status Code: {response.status_code}")
