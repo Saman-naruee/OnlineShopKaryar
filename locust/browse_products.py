@@ -1,9 +1,20 @@
+import os
+import django
+
+# Set the DJANGO_SETTINGS_MODULE environment variable
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'storefront.settings')
+
+# Initialize Django
+django.setup()
+
+
 from typing import override
 from locust import HttpUser, between, task
 from random import randint
 from store.test_tools.tools import custom_logger
 from colorama import Fore, Style
 from urllib3 import response
+from core.models import User
 
 class WebsiteUser(HttpUser):
     wait_time = between(1, 5)
@@ -18,8 +29,10 @@ class WebsiteUser(HttpUser):
         """
         Authenticate user and store the JWT token.
         """
-        password = 'postgres'
-        username = 'postgres'
+        user = self.get_user_data()
+        if user:
+            password = user['password']
+            username = user['username']
 
         try:
             response = self.client.post(
@@ -42,6 +55,7 @@ class WebsiteUser(HttpUser):
             self.access_token = None  # Ensure token is None on failure
             self.cart_id = None
             return
+        
     
 
     def get_auth_header(self):
@@ -52,7 +66,25 @@ class WebsiteUser(HttpUser):
             return {"Authorization": f"Bearer {self.access_token}"}
         return {}
     
-
+    
+    def get_user_data(self):
+        data = {
+        "username": "mytresalsdkfuser",
+        "email": "mytresalsdkfuser@gmail.com",
+        "password": "testjoahn123@",
+        "password2": "testjoahn123@",
+        "first_name": "Test",
+        "last_name": "User"
+        }
+        user, created = User.objects.get_or_create(
+            username=data["username"],
+            defaults={key: value for key, value in data.items() if key != "password2"}
+        )
+        if created:
+            data.pop("password2")
+            return data
+        return user.__dict__
+    
     @task
     def view_products(self):
         """
