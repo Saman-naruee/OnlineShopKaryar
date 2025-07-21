@@ -126,7 +126,7 @@ POSTGRES = {
     }
 }
 
-DATABASES = SQLITE3
+DATABASES = POSTGRES
 
 
 # Password validation
