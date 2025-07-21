@@ -322,41 +322,24 @@ class ReviewViewSet(ModelViewSet):
 
 class CartViewSet(CreateModelMixin, DestroyModelMixin,
                 RetrieveModelMixin, GenericViewSet, ListModelMixin):
-    """
-    A viewset for viewing and editing cart instances.
-
-    Provides endpoints for listing, creating, retrieving, and deleting carts.
-
-    Attributes:
-        queryset (QuerySet): The queryset for this viewset.
-        serializer_class (class): The serializer class to use for this viewset.
-    """
+    
     queryset = Cart.objects.prefetch_related('items__product').all()
     serializer_class = CartSerializer
-
-    def get_permissions(self):
-        if self.action == 'create':
-            return [IsAuthenticated()]
-        return [IsAuthenticated(), IsCartOwner()]
+    permission_classes = [IsAuthenticated]  # Allow any authenticated user
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        # Only return carts belonging to the current user
+        return Cart.objects.prefetch_related('items__product').filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        user_obj = request.user if request.user.is_authenticated else None
+        serializer = self.get_serializer(data=request.data, context={'user': request.user})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-        # pass the user object in the context with the key 'user'
-        if user_obj is not None:
-            serializer = self.get_serializer(data=request.data, context={'user': user_obj})
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer, user_obj=user_obj)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-    def perform_create(self, serializer, user_obj=None):
-        if user_obj is not None:
-            serializer.save(user=user_obj)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
  
 class CartItemViewSet(ModelViewSet):
     """

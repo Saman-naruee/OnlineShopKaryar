@@ -54,6 +54,9 @@ class IsCartOwner(permissions.BasePermission):
         except Cart.DoesNotExist:
             return False
     
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user
+    
 
 class IsCartItemOwner(permissions.BasePermission):
     """
@@ -66,3 +69,6 @@ class IsCartItemOwner(permissions.BasePermission):
             return cart_item.cart.user == request.user
         except CartItem.DoesNotExist:
             return False
+    
+    def has_object_permission(self, request, view, obj):
+        return obj.cart.user == request.user
