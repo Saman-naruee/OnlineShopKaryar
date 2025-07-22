@@ -36,6 +36,7 @@ SECRET_KEY = 'django-insecure-ll_hj^4joahd#p&sh_x6)2#3g4xcbx94^f!dbfc@aas-u&n_@k
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+SILK = config('SILK', cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -59,7 +60,6 @@ INSTALLED_APPS = [
     'drf_yasg',
     'djoser',
     'corsheaders',
-    'silk',
 
     # Apps
     'likes',
@@ -83,8 +83,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if DEBUG:
+if DEBUG and SILK:
     MIDDLEWARE.insert(0, 'silk.middleware.SilkyMiddleware')
+    INSTALLED_APPS.append('silk')
 
 ROOT_URLCONF = 'storefront.urls'
 

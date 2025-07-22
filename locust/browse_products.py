@@ -81,9 +81,13 @@ class WebsiteUser(HttpUser):
             defaults={key: value for key, value in data.items() if key != "password2"}
         )
         if created:
+            # If user was just created, we need to set the password properly
+            user.set_password(data["password"])
+            user.save()
             data.pop("password2")
             return data
-        return user.__dict__
+        # If user already exists, return a dict with just username and password
+        return {"username": data["username"], "password": data["password"]}
     
     @task
     def view_products(self):
