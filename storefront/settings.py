@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'djoser',
     'corsheaders',
+    'silk',
 
     # Apps
     'likes',
@@ -67,6 +68,7 @@ INSTALLED_APPS = [
     'core',
     'tags',
 ]
+
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -80,6 +82,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE.insert(0, 'silk.middleware.SilkyMiddleware')
 
 ROOT_URLCONF = 'storefront.urls'
 

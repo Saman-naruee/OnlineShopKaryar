@@ -46,6 +46,8 @@ urlpatterns = [
     path('api/', include('core.urls')),
     # Django debug toolbar
     path('__debug__/', include(debug_toolbar.urls)),
+    # django-silk
+    path('silk/', include('silk.urls', namespace='silk')),
 
     # swagger
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),  
