@@ -89,7 +89,7 @@ class WebsiteUser(HttpUser):
         # If user already exists, return a dict with just username and password
         return {"username": data["username"], "password": data["password"]}
     
-    @task
+    @task(1)
     def view_products(self):
         """
         View products with authentication.
@@ -106,7 +106,7 @@ class WebsiteUser(HttpUser):
             headers=self.get_auth_header()
         )
     
-    @task
+    @task(2)
     def view_product_details(self):
         """
         View product details with authentication.
@@ -123,7 +123,7 @@ class WebsiteUser(HttpUser):
         )
 
 
-    @task
+    @task(1)
     def add_to_cart(self):
         """
         Add to cart with authentication.
