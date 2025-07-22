@@ -5,6 +5,7 @@ from store.test_tools.tools import custom_logger
 
 
 class ProductBrowsingUser(HttpUser):
+    host = "http://127.0.0.1:8000"
     wait_time = between(1, 5)
     
     def __init__(self, *args, **kwargs):
@@ -19,6 +20,7 @@ class ProductBrowsingUser(HttpUser):
             "/api/auth/login/",
             json={"username": "postgres", "password": "UIui!@#123"}
         )
+        custom_logger(f"response.status_code: {response.status_code}", Fore.GREEN)
         
         if response.status_code == 200:
             result = response.json()
@@ -141,3 +143,7 @@ class ProductBrowsingUser(HttpUser):
             custom_logger(f"Successfully viewed reviews for product {product_id}")
         else:
             custom_logger(f"Failed to view reviews: {response.status_code}", color=Fore.RED)
+    
+    @task(1)
+    def say_hello(self):
+        self.client.get("/playground/task/")
