@@ -18,4 +18,4 @@ aider_chat_history.txt
 db.sqlite3
 sqlite3
 staticfiles/
-
+general.log
