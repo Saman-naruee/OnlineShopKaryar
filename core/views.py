@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import get_user_model
 from .serializers import UserSerializer, UserCreateSerializer
+from django.views.generic import TemplateView
+
 
 User = get_user_model()
 
@@ -39,3 +41,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         
         self.perform_update(serializer)
         return Response(serializer.data)
+
+
+class HomeView(TemplateView):
+    template_name = 'home.html'
